@@ -14,11 +14,35 @@
             <i class="fa-solid fa-brain" style="color: #8e44ad;"></i>
             <h1>Simulador de Preguntas <span class="subtitle">Seguridad Informática</span></h1>
         </div>
+        <button id="btn-logout" class="btn-primary hidden" style="margin-left: auto;">Cerrar Sesión</button>
     </header>
 
-    <div class="container" id="setup-screen">
+    <div class="container" id="auth-screen">
+        <h2>Bienvenido</h2>
+        <p>Inicia sesión para acceder al simulador</p>
+        
+        <div class="control-group">
+            <label>Email</label>
+            <input type="email" id="email-input" placeholder="tu@correo.com" style="padding: 10px; margin-bottom: 10px; width: 100%; box-sizing: border-box;">
+        </div>
+        
+        <div class="control-group">
+            <label>Contraseña</label>
+            <input type="password" id="pass-input" placeholder="******" style="padding: 10px; margin-bottom: 20px; width: 100%; box-sizing: border-box;">
+        </div>
+
+        <div style="display: flex; gap: 10px; flex-direction: column;">
+            <button id="btn-login" class="btn-primary" style="background-color: #4CAF50; color: white;">Iniciar Sesión</button>
+            <button id="btn-register" class="btn-secondary">Registrarse</button>
+            <hr style="width: 100%; border: 0.5px solid #ddd;">
+            <button id="btn-google" class="btn-primary" style="background-color: #fff; color: #333; border: 1px solid #ccc;">
+                <i class="fa-brands fa-google"></i> Acceder con Google
+            </button>
+        </div>
+    </div>
+
+    <div class="container hidden" id="setup-screen">
         <div class="controls-bar">
-            
             <div class="control-group">
                 <label><i class="fa-solid fa-book"></i> Materia</label>
                 <select disabled>
@@ -46,7 +70,8 @@
         </div>
 
         <div class="action-area">
-            <p>Selecciona el modo de estudio/examen y presiona <b>Empezar</b> para comenzar.</p>
+            <p>Hola, <span id="user-display" style="font-weight: bold;">Usuario</span>.</p>
+            <p>Selecciona el modo de estudio y presiona <b>Empezar</b>.</p>
             <button id="btn-start" class="btn-primary"><i class="fa-solid fa-rocket"></i> Empezar</button>
         </div>
     </div>
@@ -58,13 +83,11 @@
         </div>
         
         <div class="question-box">
-            <h2 id="question-text">Aquí va la pregunta...</h2>
+            <h2 id="question-text">Cargando...</h2>
         </div>
 
-        <div class="options-box" id="options-container">
-            </div>
-
-        <button id="btn-next" class="btn-secondary hidden">Siguiente</button>
+        <div class="options-box" id="options-container"></div>
+        <button id="btn-return" class="btn-secondary hidden" style="margin-top: 20px;">Volver al Menú</button>
     </div>
 
     <div class="container hidden" id="result-screen">
@@ -73,6 +96,6 @@
         <button onclick="location.reload()" class="btn-primary">Reiniciar</button>
     </div>
 
-    <script src="script.js"></script>
+    <script type="module" src="script.js"></script>
 </body>
 </html>
