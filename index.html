@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Simulador Seguridad Informática</title>
-    <link rel="stylesheet" href="style.css?v=10">
+    <link rel="stylesheet" href="style.css?v=11">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
@@ -73,6 +73,12 @@
         </div>
 
         <div class="options-box" id="options-container"></div>
+
+        <div style="text-align: right; margin-top: 20px;">
+            <button id="btn-next-question" class="btn-primary hidden" style="width: auto; padding: 10px 30px;">
+                Siguiente <i class="fa-solid fa-arrow-right"></i>
+            </button>
+        </div>
     </div>
 
     <div class="container hidden" id="result-screen">
@@ -89,11 +95,10 @@
 
     <div class="container hidden" id="review-screen" style="max-width: 700px; text-align: left;">
         <h2 style="text-align: center; color: #1a73e8;">Revisión del Examen</h2>
-        <div id="review-container" style="max-height: 60vh; overflow-y: auto; padding-right: 10px;">
-            </div>
+        <div id="review-container" style="max-height: 60vh; overflow-y: auto; padding-right: 10px;"></div>
         <button onclick="location.reload()" class="btn-primary" style="margin-top: 20px;">Finalizar Revisión</button>
     </div>
 
-    <script type="module" src="script.js?v=10"></script>
+    <script type="module" src="script.js?v=11"></script>
 </body>
 </html>
