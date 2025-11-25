@@ -23,8 +23,7 @@ const correosPermitidos = [
     "gorellanas2@unemi.edu.ec", "iastudillol@unemi.edu.ec", "sgavilanezp2@unemi.edu.ec", 
     "jzamoram9@unemi.edu.ec", "fcarrillop@unemi.edu.ec", "naguilarb@unemi.edu.ec", 
     "ehidalgoc4@unemi.edu.ec", "lbrionesg3@unemi.edu.ec", "xsalvadorv@unemi.edu.ec", 
-    "nbravop4@unemi.edu.ec", "jmoreirap6@unemi.edu.ec", "kholguinb2@unemi.edu.ec",
-    "ky211209@gmail.com", "ky2112h@gmail.com"
+    "nbravop4@unemi.edu.ec", "jmoreirap6@unemi.edu.ec", "kholguinb2@unemi.edu.ec", "jcastrof8@unemi.edu.ec"
 ];
 
 // --- 3. BANCO DE PREGUNTAS CORREGIDO (64 PREGUNTAS) ---
