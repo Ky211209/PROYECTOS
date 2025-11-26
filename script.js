@@ -21,11 +21,22 @@ const correosDosDispositivos = ["dpachecog2@unemi.edu.ec", "htigrer@unemi.edu.ec
 const correosUnDispositivo = ["cnavarretem4@unemi.edu.ec", "gorellanas2@unemi.edu.ec", "ehidalgoc4@unemi.edu.ec", "lbrionesg3@unemi.edu.ec", "xsalvadorv@unemi.edu.ec", "nbravop4@unemi.edu.ec", "jmoreirap6@unemi.edu.ec", "jcastrof8@unemi.edu.ec", "jcaleroc3@unemi.edu.ec"];
 const correosPermitidos = [...correosDosDispositivos, ...correosUnDispositivo];
 
-// --- AVATARES ---
-const AVATAR_SEEDS = ['Felix', 'Aneka', 'Zoe', 'Bear', 'Chester', 'Bandit', 'Molly', 'Buster', 'Lucky', 'Ginger'];
-let currentAvatarUrl = `https://api.dicebear.com/7.x/bottts/svg?seed=Felix`;
+// --- AVATARES ESTILO QUIZIZZ (CARTOON FLAT) ---
+// Usamos 'avataaars' y 'lorelei' con fondos de colores para que parezcan cromos.
+const AVATAR_CONFIG = [
+    { seed: 'Felix', style: 'avataaars', bg: 'b6e3f4' },
+    { seed: 'Aneka', style: 'avataaars', bg: 'c0aede' },
+    { seed: 'Zoe', style: 'avataaars', bg: 'd1d4f9' },
+    { seed: 'Bear', style: 'avataaars', bg: 'ffdfbf' },
+    { seed: 'Chester', style: 'avataaars', bg: 'ffd5dc' },
+    { seed: 'Bandit', style: 'lorelei', bg: 'c0aede' }, // Estilo alternativo más cartoon
+    { seed: 'Molly', style: 'lorelei', bg: 'b6e3f4' },
+    { seed: 'Buster', style: 'lorelei', bg: 'ffdfbf' }
+];
+
+let currentAvatarUrl = null;
 let currentStreak = 0;
-let startTime = 0; // Para calcular tiempo exacto
+let startTime = 0; 
 
 // --- BANCO DE PREGUNTAS (64 PREGUNTAS) ---
 const bancoPreguntas = [
@@ -33,8 +44,10 @@ const bancoPreguntas = [
     { texto: "¿Qué herramienta open-source permite escaneos de gran escala en red y sistemas?", opciones: ["Nmap", "Fortinet WVS", "OpenVAS", "Nessus Essentials"], respuesta: 2, explicacion: "Respuesta correcta: OpenVAS." },
     { texto: "Una amenaza ambiental típica para un centro de datos sería:", opciones: ["Huracán", "Robo de servidores", "Virus informático", "Pérdida de energía"], respuesta: 0, explicacion: "Respuesta correcta: Huracán." },
     { texto: "Herramienta que identifica puertos abiertos y sistema operativo desde consola:", opciones: ["OpenVAS", "Wireshark", "Nessus", "Nmap"], respuesta: 3, explicacion: "Respuesta correcta: Nmap." },
-    // ... (ASEGÚRATE DE COPIAR AQUÍ LAS 64 PREGUNTAS COMPLETAS DE LA RESPUESTA ANTERIOR) ...
+    { texto: "Un IDS normalmente responde:", opciones: ["Eliminando archivos", "Aumentando ancho de banda", "Generando alertas o registrando eventos", "Cambiando contraseñas"], respuesta: 2, explicacion: "Respuesta correcta: Generando alertas o registrando eventos." },
     { texto: "Un objetivo clave de la seguridad de bases de datos es mantener la:", opciones: ["Confidencialidad, integridad y disponibilidad (CIA)", "Fragmentación", "Redundancia excesiva", "Compresión"], respuesta: 0, explicacion: "Respuesta correcta: Confidencialidad, integridad y disponibilidad (CIA)." },
+    // ... (COPIA AQUÍ EL RESTO DE LAS 64 PREGUNTAS DEL CÓDIGO ANTERIOR PARA NO PERDERLAS) ...
+    // IMPORTANTE: Asegúrate de que el array esté completo con las 64 preguntas.
     { texto: "El término SSRF significa:", opciones: ["Safe Session Reset Form", "Simple Service Relay Feature", "Secure Software Risk Framework", "Server-Side Request Forgery"], respuesta: 3, explicacion: "Respuesta correcta: Server-Side Request Forgery." },
     { texto: "El proyecto OWASP tiene como finalidad principal:", opciones: ["Vender cortafuegos", "Producir malware de prueba", "Crear estándares de hardware", "Mejorar la seguridad de aplicaciones web de forma abierta"], respuesta: 3, explicacion: "Respuesta correcta: Mejorar la seguridad de aplicaciones web de forma abierta." },
     { texto: "La gestión de activos se considera importante porque:", opciones: ["Genera llaves criptográficas", "Reduce el jitter", "Actualiza antivirus", "Mantiene control sobre hardware, software y datos"], respuesta: 3, explicacion: "Respuesta correcta: Mantiene control sobre hardware, software y datos." },
@@ -92,8 +105,7 @@ const bancoPreguntas = [
     { texto: "Política que define quién accede a qué datos dentro de una BD:", opciones: ["Cifrado TLS", "Autorización / control de acceso", "Compilación", "Backup"], respuesta: 1, explicacion: "Respuesta correcta: Autorización / control de acceso." },
     { texto: "Antes de aplicar parches en producción se debe:", opciones: ["Cambiar el FQDN", "Borrar registros", "Probar el parche en un entorno de pruebas", "Reiniciar IDS"], respuesta: 2, explicacion: "Respuesta correcta: Probar el parche en un entorno de pruebas." },
     { texto: "Una inyección SQL basada en errores aprovecha:", opciones: ["Cifrado AES", "Tiempo de respuesta", "Mensajes de error devueltos por la aplicación", "Token OTP"], respuesta: 2, explicacion: "Respuesta correcta: Mensajes de error devueltos por la aplicación." },
-    { texto: "Ventaja de un firewall perimetral bien configurado:", opciones: ["Mejora la batería de los clientes", "Elimina todos los virus", "Reduce la superficie de ataque expuesta a Internet", "Incrementa la velocidad Wi-Fi"], respuesta: 2, explicacion: "Respuesta correcta: Reduce la superficie de ataque expuesta a Internet." },
-    { texto: "Un IDS normalmente responde:", opciones: ["Eliminando archivos", "Aumentando ancho de banda", "Generando alertas o registrando eventos", "Cambiando contraseñas"], respuesta: 2, explicacion: "Respuesta correcta: Generando alertas o registrando eventos." }
+    { texto: "Ventaja de un firewall perimetral bien configurado:", opciones: ["Mejora la batería de los clientes", "Elimina todos los virus", "Reduce la superficie de ataque expuesta a Internet", "Incrementa la velocidad Wi-Fi"], respuesta: 2, explicacion: "Respuesta correcta: Reduce la superficie de ataque expuesta a Internet." }
 ];
 
 // VARIABLES GLOBALES
@@ -108,16 +120,24 @@ let currentRoomId = null;
 let currentMode = 'individual';
 let unsubscribeRoom = null;
 
-// --- INICIALIZACIÓN ---
+// --- FUNCION: INICIAR CARGA DE AVATARES (SOLO AL NECESITAR) ---
 function initAvatars() {
     const grid = document.getElementById('avatar-grid');
+    if(grid.children.length > 1) return; 
+    
     grid.innerHTML = '';
-    AVATAR_SEEDS.forEach((seed, index) => {
-        const url = `https://api.dicebear.com/7.x/bottts/svg?seed=${seed}`;
+    AVATAR_CONFIG.forEach((av, index) => {
+        // API de DiceBear con color de fondo para efecto "tarjeta"
+        const url = `https://api.dicebear.com/7.x/${av.style}/svg?seed=${av.seed}&backgroundColor=${av.bg}`;
         const img = document.createElement('img');
         img.src = url;
         img.className = 'avatar-option';
-        if(index === 0) { img.classList.add('avatar-selected'); currentAvatarUrl = url; }
+        
+        if(index === 0) {
+            img.classList.add('avatar-selected');
+            currentAvatarUrl = url;
+        }
+
         img.onclick = () => {
             document.querySelectorAll('.avatar-option').forEach(x => x.classList.remove('avatar-selected'));
             img.classList.add('avatar-selected');
@@ -128,7 +148,6 @@ function initAvatars() {
 }
 
 window.addEventListener('load', () => {
-    // Quitar loader cuando carga todo
     setTimeout(() => document.getElementById('app-loader').classList.add('hidden'), 1000);
 });
 
@@ -189,7 +208,6 @@ onAuthStateChanged(auth, async (user) => {
                 document.getElementById('btn-logout').classList.remove('hidden');
                 document.getElementById('user-display').innerText = user.email.split('@')[0];
                 document.getElementById('player-nickname').value = user.email.split('@')[0];
-                initAvatars();
             }
         } else {
             alert("No autorizado.");
@@ -204,7 +222,7 @@ onAuthStateChanged(auth, async (user) => {
 document.getElementById('btn-google').addEventListener('click', () => signInWithPopup(auth, new GoogleAuthProvider()));
 document.getElementById('btn-logout').addEventListener('click', () => { if(confirm("¿Salir?")) { signOut(auth); location.reload(); } });
 
-// --- INICIAR ---
+// --- INICIAR DESDE DROPDOWN ---
 document.getElementById('btn-start').addEventListener('click', () => {
     const modo = document.getElementById('mode-select').value;
     const tiempo = document.getElementById('time-select').value;
@@ -213,17 +231,29 @@ document.getElementById('btn-start').addEventListener('click', () => {
     else { tiempoRestante = -1; }
 
     if (modo === 'multiplayer') {
-        mostrarSelectorSalas();
-    } else if (modo === 'study') {
+        // Muestra pantalla de avatar SOLO si es multiplayer
+        showScreen('avatar-screen');
+        initAvatars(); 
+        currentMode = 'multiplayer';
+    } 
+    else if (modo === 'study') {
         currentMode = 'study';
         preguntasExamen = [...bancoPreguntas].sort(() => 0.5 - Math.random());
         iniciarInterfazQuiz();
-    } else {
+    } 
+    else {
         currentMode = 'exam';
         preguntasExamen = [...bancoPreguntas].sort(() => 0.5 - Math.random()).slice(0, 20);
         iniciarInterfazQuiz();
     }
 });
+
+document.getElementById('btn-confirm-identity').addEventListener('click', () => {
+    mostrarSelectorSalas();
+});
+
+document.getElementById('back-to-setup').addEventListener('click', () => showScreen('setup-screen'));
+document.getElementById('back-to-avatar').addEventListener('click', () => showScreen('avatar-screen'));
 
 document.getElementById('btn-stats').addEventListener('click', () => { cargarGrafico(); document.getElementById('stats-modal').classList.remove('hidden'); });
 
@@ -250,7 +280,6 @@ function mostrarSelectorSalas() {
 
 async function unirseASala(salaId) {
     currentRoomId = salaId;
-    currentMode = 'multiplayer';
     const salaRef = doc(db, "salas_activas", salaId);
     const nick = document.getElementById('player-nickname').value || currentUserEmail.split('@')[0];
     const jugadorData = { name: nick, avatar: currentAvatarUrl };
@@ -269,7 +298,8 @@ async function unirseASala(salaId) {
             
             jugadores.forEach(p => { 
                 const name = p.name || p; 
-                const av = p.avatar || 'https://api.dicebear.com/7.x/bottts/svg?seed=default';
+                // Fallback si no tiene avatar (usuarios antiguos)
+                const av = p.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=default&backgroundColor=e0e0e0';
                 listDiv.innerHTML += `<div class="player-badge"><img src="${av}" class="lobby-avatar-small"> ${name}</div>`; 
             });
             
@@ -286,9 +316,7 @@ async function unirseASala(salaId) {
 
 document.getElementById('btn-leave-lobby').addEventListener('click', async () => {
     if (confirm("¿Abandonar escuadrón?")) {
-        if (currentRoomId) {
-            location.reload();
-        }
+        if (currentRoomId) location.reload();
     }
 });
 
@@ -297,12 +325,9 @@ document.getElementById('btn-start-war').addEventListener('click', async () => {
     await updateDoc(salaRef, { estado: 'jugando' });
 });
 
-document.getElementById('back-to-menu').addEventListener('click', () => showScreen('setup-screen'));
-
 // --- QUIZ ENGINE ---
 function iniciarQuizMultiplayer() {
     if (unsubscribeRoom) unsubscribeRoom();
-    // 64 PREGUNTAS ALEATORIAS
     preguntasExamen = [...bancoPreguntas].sort(() => 0.5 - Math.random());
     iniciarInterfazQuiz();
 }
@@ -311,7 +336,7 @@ function iniciarInterfazQuiz() {
     respuestasUsuario = [];
     indiceActual = 0;
     currentStreak = 0;
-    startTime = Date.now(); // Guardamos tiempo de inicio
+    startTime = Date.now();
     
     const bgMusic = document.getElementById('bg-music');
     const vol = document.getElementById('volume-slider').value;
@@ -415,7 +440,7 @@ async function terminarQuiz(abandono = false) {
     if(bgMusic) { bgMusic.pause(); bgMusic.currentTime = 0; }
     clearInterval(intervaloTiempo);
 
-    const tiempoFinal = Math.floor((Date.now() - startTime) / 1000); // Segundos tomados
+    const tiempoFinal = Math.floor((Date.now() - startTime) / 1000);
 
     let aciertos = 0;
     respuestasUsuario.forEach((r, i) => {
@@ -424,25 +449,33 @@ async function terminarQuiz(abandono = false) {
     const nota = Math.round((aciertos / preguntasExamen.length) * 100);
     const nick = document.getElementById('player-nickname').value || currentUserEmail.split('@')[0];
 
+    // SI ES MULTIPLAYER, GUARDAR EN SALA
     if (currentMode === 'multiplayer' && currentRoomId) {
         await addDoc(collection(db, `salas_activas/${currentRoomId}/resultados`), {
             user: nick,
             avatar: currentAvatarUrl,
             score: nota,
-            timeTaken: tiempoFinal, // Para desempate
+            correctas: aciertos,
+            timeTaken: tiempoFinal,
             status: abandono ? "Retirado" : "Finalizado",
             date: new Date()
         });
         escucharResultadosSala();
         document.getElementById('room-results-box').classList.remove('hidden');
+        
+        // Mostrar avatar propio también
+        const avatarImg = document.getElementById('final-avatar-display');
+        avatarImg.src = currentAvatarUrl;
+        avatarImg.classList.remove('hidden');
     } else {
+        // MODO INDIVIDUAL
         document.getElementById('room-results-box').classList.add('hidden');
+        document.getElementById('final-avatar-display').classList.add('hidden'); // Ocultar avatar si es individual
         guardarHistorialLocal(nota);
     }
 
     showScreen('result-screen');
     document.getElementById('score-final').innerText = `${nota}/100`;
-    document.getElementById('final-avatar-display').src = currentAvatarUrl;
     
     const msg = document.getElementById('custom-msg');
     const sfxWin = document.getElementById('success-sound');
@@ -468,9 +501,7 @@ async function terminarQuiz(abandono = false) {
 }
 
 function escucharResultadosSala() {
-    // ORDENAR POR PUNTAJE (DESC) Y LUEGO POR TIEMPO (ASC)
     const q = query(collection(db, `salas_activas/${currentRoomId}/resultados`), orderBy("score", "desc"), orderBy("timeTaken", "asc"));
-    
     onSnapshot(q, (snap) => {
         const div = document.getElementById('room-leaderboard');
         div.innerHTML = '';
@@ -479,14 +510,13 @@ function escucharResultadosSala() {
             const data = d.data();
             const mins = Math.floor(data.timeTaken / 60);
             const secs = data.timeTaken % 60;
-            
             div.innerHTML += `
             <div class="rank-row">
                 <span class="rank-pos">#${pos}</span>
                 <img src="${data.avatar}" class="rank-img">
                 <div class="rank-info">
                     <span class="rank-name">${data.user}</span>
-                    <span class="rank-status">${data.status} (${mins}m ${secs}s)</span>
+                    <span class="rank-detail">${data.status} (${mins}m ${secs}s)</span>
                 </div>
                 <span class="rank-score">${data.score} pts</span>
             </div>`;
@@ -525,7 +555,7 @@ function createConfetti() {
     }
 }
 
-// EVENTOS UI
+// VOLUMEN
 document.getElementById('volume-slider').addEventListener('input', (e) => {
     document.querySelectorAll('audio').forEach(a => { a.volume = e.target.value; a.muted = (e.target.value == 0); });
 });
