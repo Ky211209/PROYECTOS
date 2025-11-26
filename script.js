@@ -32,8 +32,7 @@ const correosUnDispositivo = [
 
 const correosPermitidos = [...correosDosDispositivos, ...correosUnDispositivo];
 
-// --- 3. BANCO DE PREGUNTAS COMPLETO (64 PREGUNTAS DEL PDF) ---
-// Extraído de: Cuestionario-Seguridad Informática.pdf
+// --- 3. BANCO DE PREGUNTAS COMPLETO (64 PREGUNTAS) ---
 const bancoPreguntas = [
     { texto: "¿Cuál es un ejemplo de amenaza técnica según el documento?", opciones: ["Phishing", "Baja tensión eléctrica", "Inyección SQL", "Insider"], respuesta: 1, explicacion: "Respuesta correcta: Baja tensión eléctrica." },
     { texto: "¿Qué herramienta open-source permite escaneos de gran escala en red y sistemas?", opciones: ["Nmap", "Fortinet WVS", "OpenVAS", "Nessus Essentials"], respuesta: 2, explicacion: "Respuesta correcta: OpenVAS." },
@@ -43,7 +42,7 @@ const bancoPreguntas = [
     { texto: "El operador 'eq' en una regla de firewall sirve para:", opciones: ["Cambiar protocolo", "Hacer ping", "Filtrar un número de puerto específico", "Denegar IPs"], respuesta: 2, explicacion: "Respuesta correcta: Filtrar un número de puerto específico." },
     { texto: "Una falla criptográfica puede conducir principalmente a:", opciones: ["Exposición de datos confidenciales", "Jitter elevando", "DoS", "Aumento de latencia"], respuesta: 0, explicacion: "Respuesta correcta: Exposición de datos confidenciales." },
     { texto: "¿Qué categoría de activo abarca servidores, routers y estaciones de trabajo?", opciones: ["Data", "Lines & Networks", "Hardware", "Software"], respuesta: 2, explicacion: "Respuesta correcta: Hardware." },
-    { texto: "Una amenaza ambiental típica para un centro de datos sería:", opciones: ["Huracán", "Robo de servidores", "Virus informático", "Pérdida de energía"], respuesta: 3, explicacion: "Respuesta correcta: Pérdida de energía." },
+    { texto: "Una amenaza ambiental típica para un centro de datos sería:", opciones: ["Huracán", "Robo de servidores", "Virus informático", "Pérdida de energía"], respuesta: 0, explicacion: "Respuesta correcta: Huracán (Clasificación teórica de amenaza ambiental)." },
     { texto: "¿Qué nivel de riesgo requiere medidas inmediatas según la tabla de niveles?", opciones: ["Alto/Extremo", "Bajo", "Negligible", "Medio"], respuesta: 0, explicacion: "Respuesta correcta: Alto/Extremo." },
     { texto: "El estándar OWASP ASVS se utiliza para:", opciones: ["Generar certificados SSL", "Probar hardware", "Cifrado TLS", "Verificar controles de seguridad en aplicaciones"], respuesta: 3, explicacion: "Respuesta correcta: Verificar controles de seguridad en aplicaciones." },
     { texto: "Los ataques pasivos se caracterizan por:", opciones: ["Inyectar malware", "Ejecutar DoS", "Destruir hardware", "Escuchar y capturar tráfico"], respuesta: 3, explicacion: "Respuesta correcta: Escuchar y capturar tráfico." },
@@ -226,12 +225,12 @@ document.getElementById('btn-start').addEventListener('click', () => {
     const bgMusic = document.getElementById('bg-music');
     if(bgMusic) { 
         bgMusic.volume = 0.4;
-        // Promesa para manejar errores de autoplay
+        // Promesa para manejar errores de autoplay y forzar reproducción
         bgMusic.play().then(() => {
             console.log("Audio iniciado.");
         }).catch(error => {
-            console.error("Autoplay bloqueado:", error);
-            // Intentar recargar
+            console.error("Autoplay bloqueado por navegador:", error);
+            // Intentar recargar para forzar buffer
             bgMusic.load();
             bgMusic.play().catch(e => console.log("Reintento fallido."));
         });
@@ -405,33 +404,43 @@ function terminarQuiz() {
     const scoreElement = document.getElementById('score-final');
     scoreElement.innerText = `${nota}/100`;
 
-    // Mensaje Personalizado
+    // Elementos de control
     const msgContainer = document.getElementById('custom-msg');
     const successAudio = document.getElementById('success-sound');
     const failAudio = document.getElementById('fail-sound');
 
-    // Resetear mensajes
+    // --- LÓGICA DE SONIDO (GANAR vs PERDER) ---
+    // Si la nota es >= 70, suena "éxito/aplausos". Si es menor, suena "fallo".
+    if (nota >= 70) {
+        if(successAudio) successAudio.play();
+    } else {
+        if(failAudio) failAudio.play();
+    }
+
+    // --- LÓGICA DE MENSAJES Y EFECTOS VISUALES ---
     msgContainer.className = '';
     
     if (nota === 100) {
+        // 100 PUNTOS: Texto + Fiesta
         msgContainer.innerText = "¡EXCELENTE PUNTAJE! PRUEBA SUPERADA 🏆";
         msgContainer.style.color = "#28a745"; 
         scoreElement.innerHTML += ' <i class="fa-solid fa-trophy fa-bounce"></i>';
-        if(successAudio) successAudio.play();
-        createConfetti();
+        createConfetti(); // Solo aquí sale confeti
     } 
     else if (nota >= 90) {
+        // 90-99: Texto Azul (Sin confeti, ya sonó aplauso)
         msgContainer.innerText = "¡Excelente! Sigue así.";
         msgContainer.style.color = "#1a73e8"; 
     }
     else if (nota >= 70) {
+        // 70-89: Texto Amarillo (Sin confeti, ya sonó aplauso)
         msgContainer.innerText = "Buen trabajo, ya casi lo logras.";
         msgContainer.style.color = "#fbbc04"; 
     }
     else {
+        // < 70: Texto Rojo (Ya sonó música triste)
         msgContainer.innerText = "Sigue intentándolo, tú puedes.";
         msgContainer.style.color = "#ea4335"; 
-        if(failAudio) failAudio.play();
     }
 
     // Ocultar botón Revisar Respuestas si es modo Estudio
@@ -442,6 +451,24 @@ function terminarQuiz() {
         document.getElementById('btn-review').classList.remove('hidden');
     }
 }
+
+// --- LÓGICA DE SILENCIAR SONIDO (NUEVO) ---
+let isMuted = false;
+const btnSound = document.getElementById('btn-mute');
+const allAudios = document.querySelectorAll('audio');
+
+btnSound.addEventListener('click', () => {
+    isMuted = !isMuted;
+    allAudios.forEach(audio => audio.muted = isMuted);
+    
+    if (isMuted) {
+        btnSound.innerHTML = '<i class="fa-solid fa-volume-xmark"></i>';
+        btnSound.style.color = '#ea4335'; // Rojo indicando silencio
+    } else {
+        btnSound.innerHTML = '<i class="fa-solid fa-volume-high"></i>';
+        btnSound.style.color = '#5f6368';
+    }
+});
 
 // --- 9. REVISIÓN ---
 document.getElementById('btn-review').addEventListener('click', () => {
