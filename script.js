@@ -42,6 +42,7 @@ const bancoPreguntas = [
     { texto: "El operador 'eq' en una regla de firewall sirve para:", opciones: ["Cambiar protocolo", "Hacer ping", "Filtrar un número de puerto específico", "Denegar IPs"], respuesta: 2, explicacion: "Respuesta correcta: Filtrar un número de puerto específico." },
     { texto: "Una falla criptográfica puede conducir principalmente a:", opciones: ["Exposición de datos confidenciales", "Jitter elevando", "DoS", "Aumento de latencia"], respuesta: 0, explicacion: "Respuesta correcta: Exposición de datos confidenciales." },
     { texto: "¿Qué categoría de activo abarca servidores, routers y estaciones de trabajo?", opciones: ["Data", "Lines & Networks", "Hardware", "Software"], respuesta: 2, explicacion: "Respuesta correcta: Hardware." },
+    // PREGUNTA 9 CORREGIDA: HURACÁN
     { texto: "Una amenaza ambiental típica para un centro de datos sería:", opciones: ["Huracán", "Robo de servidores", "Virus informático", "Pérdida de energía"], respuesta: 0, explicacion: "Respuesta correcta: Huracán (Clasificación teórica de amenaza ambiental)." },
     { texto: "¿Qué nivel de riesgo requiere medidas inmediatas según la tabla de niveles?", opciones: ["Alto/Extremo", "Bajo", "Negligible", "Medio"], respuesta: 0, explicacion: "Respuesta correcta: Alto/Extremo." },
     { texto: "El estándar OWASP ASVS se utiliza para:", opciones: ["Generar certificados SSL", "Probar hardware", "Cifrado TLS", "Verificar controles de seguridad en aplicaciones"], respuesta: 3, explicacion: "Respuesta correcta: Verificar controles de seguridad en aplicaciones." },
@@ -221,16 +222,18 @@ document.getElementById('btn-start').addEventListener('click', () => {
     if (tiempo !== 'infinity') { tiempoRestante = parseInt(tiempo) * 60; iniciarReloj(); } 
     else { document.getElementById('timer-display').innerText = "--:--"; }
     
-    // --- Lógica de Música ---
+    // --- Lógica de Música (CORREGIDA) ---
     const bgMusic = document.getElementById('bg-music');
+    const slider = document.getElementById('volume-slider');
+    
     if(bgMusic) { 
-        bgMusic.volume = 0.4;
-        // Promesa para manejar errores de autoplay y forzar reproducción
+        const currentVol = slider ? slider.value : 0.4;
+        bgMusic.volume = currentVol;
+        
         bgMusic.play().then(() => {
             console.log("Audio iniciado.");
         }).catch(error => {
-            console.error("Autoplay bloqueado por navegador:", error);
-            // Intentar recargar para forzar buffer
+            console.error("Autoplay bloqueado:", error);
             bgMusic.load();
             bgMusic.play().catch(e => console.log("Reintento fallido."));
         });
@@ -408,6 +411,11 @@ function terminarQuiz() {
     const msgContainer = document.getElementById('custom-msg');
     const successAudio = document.getElementById('success-sound');
     const failAudio = document.getElementById('fail-sound');
+    const currentVol = document.getElementById('volume-slider').value;
+
+    // Asignar volumen actual a efectos
+    if(successAudio) successAudio.volume = currentVol;
+    if(failAudio) failAudio.volume = currentVol;
 
     // --- LÓGICA DE SONIDO (GANAR vs PERDER) ---
     // Si la nota es >= 70, suena "éxito/aplausos". Si es menor, suena "fallo".
@@ -452,21 +460,44 @@ function terminarQuiz() {
     }
 }
 
-// --- LÓGICA DE SILENCIAR SONIDO (NUEVO) ---
-let isMuted = false;
-const btnSound = document.getElementById('btn-mute');
+// --- LÓGICA DE CONTROL DE VOLUMEN (SLIDER + MUTE) ---
+const slider = document.getElementById('volume-slider');
+const btnMute = document.getElementById('btn-mute');
+const iconVol = document.getElementById('vol-icon');
 const allAudios = document.querySelectorAll('audio');
+let lastVolume = 0.4;
 
-btnSound.addEventListener('click', () => {
-    isMuted = !isMuted;
-    allAudios.forEach(audio => audio.muted = isMuted);
+// Slider de Volumen
+slider.addEventListener('input', (e) => {
+    const val = e.target.value;
+    allAudios.forEach(audio => {
+        audio.volume = val;
+        audio.muted = (val == 0);
+    });
     
-    if (isMuted) {
-        btnSound.innerHTML = '<i class="fa-solid fa-volume-xmark"></i>';
-        btnSound.style.color = '#ea4335'; // Rojo indicando silencio
+    // Actualizar icono según nivel
+    if(val == 0) iconVol.className = 'fa-solid fa-volume-xmark';
+    else if(val < 0.5) iconVol.className = 'fa-solid fa-volume-low';
+    else iconVol.className = 'fa-solid fa-volume-high';
+});
+
+// Botón Mute
+btnMute.addEventListener('click', () => {
+    const isMuted = allAudios[0].muted; // Verificar estado actual del primer audio
+    
+    if(!isMuted) {
+        // Silenciar todo
+        lastVolume = slider.value;
+        slider.value = 0;
+        allAudios.forEach(audio => { audio.muted = true; audio.volume = 0; });
+        iconVol.className = 'fa-solid fa-volume-xmark';
+        btnMute.style.color = '#ea4335';
     } else {
-        btnSound.innerHTML = '<i class="fa-solid fa-volume-high"></i>';
-        btnSound.style.color = '#5f6368';
+        // Restaurar sonido
+        slider.value = lastVolume > 0 ? lastVolume : 0.4;
+        allAudios.forEach(audio => { audio.muted = false; audio.volume = slider.value; });
+        iconVol.className = 'fa-solid fa-volume-high';
+        btnMute.style.color = '#5f6368';
     }
 });
 
