@@ -8,12 +8,23 @@ header { width: 100%; padding: 10px 20px; background: #fff; box-shadow: 0 2px 4p
 
 .container { width: 95%; max-width: 480px; background: #fff; padding: 25px; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.05); text-align: center; margin-top: 70px; margin-bottom: 20px; position: relative; z-index: 10; }
 
-/* AVATAR SELECTION */
+/* AVATAR SELECTION (IMÁGENES) */
 .avatar-section { margin: 20px 0; background: #f8f9fa; padding: 15px; border-radius: 12px; border: 1px solid #e1e4e8; }
 .avatar-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 10px; justify-items: center; }
-.avatar-option { font-size: 1.8rem; cursor: pointer; transition: 0.2s; padding: 5px; border-radius: 50%; border: 2px solid transparent; }
-.avatar-option:hover { transform: scale(1.2); }
-.avatar-selected { background-color: #e8f0fe; border-color: #1a73e8; transform: scale(1.1); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+.avatar-option { 
+    width: 50px; height: 50px; 
+    cursor: pointer; transition: 0.2s; 
+    border-radius: 50%; 
+    border: 3px solid transparent; 
+    background-color: #eee; /* Fondo por defecto */
+}
+.avatar-option:hover { transform: scale(1.1); }
+.avatar-selected { 
+    border-color: #1a73e8; 
+    transform: scale(1.2); 
+    box-shadow: 0 4px 10px rgba(26, 115, 232, 0.3); 
+    background-color: #fff;
+}
 
 /* COMBO / RACHA */
 #combo-display {
@@ -40,14 +51,21 @@ header { width: 100%; padding: 10px 20px; background: #fff; box-shadow: 0 2px 4p
 .ans-correct { border-color: #28a745 !important; background: #d4edda !important; color: #155724; }
 .ans-wrong { border-color: #dc3545 !important; background: #f8d7da !important; color: #721c24; }
 
-/* RANKING ROWS */
+/* RANKING ROWS CON IMÁGENES */
 .rank-row { display: flex; align-items: center; padding: 8px; border-bottom: 1px solid #eee; gap: 10px; }
 .rank-pos { font-weight: 800; width: 25px; color: #555; }
-.rank-avatar { font-size: 1.5rem; }
+.rank-img { width: 40px; height: 40px; border-radius: 50%; border: 2px solid #ddd; background: #eee; }
 .rank-info { flex-grow: 1; text-align: left; }
 .rank-name { font-weight: 600; font-size: 0.9rem; display: block; }
 .rank-status { font-size: 0.75rem; color: #888; }
 .rank-score { font-weight: 800; color: #1a73e8; font-size: 1.1rem; }
+
+/* LOBBY JUGADORES */
+.player-badge { 
+    background: #fff; border: 1px solid #ddd; padding: 5px 15px; border-radius: 30px; 
+    font-weight: bold; display: flex; align-items: center; gap: 10px; justify-content: flex-start;
+}
+.lobby-avatar-small { width: 30px; height: 30px; border-radius: 50%; }
 
 /* UTILS */
 .hidden { display: none !important; }
