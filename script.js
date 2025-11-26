@@ -17,13 +17,26 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// --- 2. LISTA DE CORREOS AUTORIZADOS ---
-const correosPermitidos = [
-    "dpachecog2@unemi.edu.ec", "cnavarretem4@unemi.edu.ec", "htigrer@unemi.edu.ec", 
-    "gorellanas2@unemi.edu.ec", "iastudillol@unemi.edu.ec", "sgavilanezp2@unemi.edu.ec", 
+// --- 2. LISTA DE CORREOS AUTORIZADOS Y DIFERENCIADOS ---
+
+// Correo que tendrán límite de 2 dispositivos
+const correosDosDispositivos = [
+    "dpachecog2@unemi.edu.ec", "htigrer@unemi.edu.ec", "sgavilanezp2@unemi.edu.ec", 
     "jzamoram9@unemi.edu.ec", "fcarrillop@unemi.edu.ec", "naguilarb@unemi.edu.ec", 
-    "ehidalgoc4@unemi.edu.ec", "lbrionesg3@unemi.edu.ec", "xsalvadorv@unemi.edu.ec", 
-    "nbravop4@unemi.edu.ec", "jmoreirap6@unemi.edu.ec", "kholguinb2@unemi.edu.ec", "jcastrof8@unemi.edu.ec"
+    "kholguinb2@unemi.edu.ec"
+];
+
+// Correos que tendrán límite de 1 dispositivo
+const correosUnDispositivo = [
+    "cnavarretem4@unemi.edu.ec", "gorellanas2@unemi.edu.ec", "ehidalgoc4@unemi.edu.ec", 
+    "lbrionesg3@unemi.edu.ec", "xsalvadorv@unemi.edu.ec", "nbravop4@unemi.edu.ec", 
+    "jmoreirap6@unemi.edu.ec", "jcastrof8@unemi.edu.ec"
+];
+
+// Unimos las listas para la validación de acceso inicial
+const correosPermitidos = [
+    ...correosDosDispositivos, 
+    ...correosUnDispositivo
 ];
 
 // --- 3. BANCO DE PREGUNTAS CORREGIDO (64 PREGUNTAS) ---
@@ -126,10 +139,16 @@ function obtenerDeviceId() {
     return deviceId;
 }
 
-// --- 5. LÓGICA DE SEGURIDAD AVANZADA (Cupo de 2 Dispositivos) ---
+// --- 5. LÓGICA DE SEGURIDAD AVANZADA (CUPOS DIFERENCIADOS) ---
 async function validarDispositivo(user) {
     const email = user.email;
     const miDeviceId = obtenerDeviceId(); 
+    
+    // Determinar el límite de dispositivos para este usuario
+    let limiteDispositivos = 1;
+    if (correosDosDispositivos.includes(email)) {
+        limiteDispositivos = 2;
+    }
 
     // Consultar la base de datos
     const docRef = doc(db, "usuarios_seguros", email);
@@ -140,20 +159,23 @@ async function validarDispositivo(user) {
         let listaDispositivos = datos.dispositivos || []; 
         
         if (listaDispositivos.includes(miDeviceId)) {
-            return true; 
+            return true; // Dispositivo ya registrado
         } else {
-            if (listaDispositivos.length < 2) {
+            if (listaDispositivos.length < limiteDispositivos) {
+                // Registrar nuevo dispositivo
                 listaDispositivos.push(miDeviceId);
                 await setDoc(docRef, { dispositivos: listaDispositivos }, { merge: true });
                 return true;
             } else {
-                alert(`⛔ ACCESO DENEGADO ⛔\n\nYa tienes 2 dispositivos registrados (PC y Celular).\nNo puedes iniciar sesión en un tercer equipo.`);
+                // Acceso denegado por exceder el límite
+                alert(`⛔ ACCESO DENEGADO ⛔\n\nHas excedido tu límite de ${limiteDispositivos} dispositivos registrados. Debes cerrar sesión en otro equipo para continuar.`);
                 await signOut(auth);
                 location.reload();
                 return false;
             }
         }
     } else {
+        // Primer inicio de sesión: registrar el dispositivo con su límite
         await setDoc(docRef, {
             dispositivos: [miDeviceId],
             fecha_registro: new Date().toISOString()
