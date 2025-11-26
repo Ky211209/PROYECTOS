@@ -16,20 +16,17 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// --- AUTORIZACIÓN ---
 const correosDosDispositivos = ["dpachecog2@unemi.edu.ec", "htigrer@unemi.edu.ec", "sgavilanezp2@unemi.edu.ec", "jzamoram9@unemi.edu.ec", "fcarrillop@unemi.edu.ec", "naguilarb@unemi.edu.ec", "kholguinb2@unemi.edu.ec"];
 const correosUnDispositivo = ["cnavarretem4@unemi.edu.ec", "gorellanas2@unemi.edu.ec", "ehidalgoc4@unemi.edu.ec", "lbrionesg3@unemi.edu.ec", "xsalvadorv@unemi.edu.ec", "nbravop4@unemi.edu.ec", "jmoreirap6@unemi.edu.ec", "jcastrof8@unemi.edu.ec", "jcaleroc3@unemi.edu.ec"];
 const correosPermitidos = [...correosDosDispositivos, ...correosUnDispositivo];
 
-// --- AVATARES ESTILO QUIZIZZ (CARTOON FLAT) ---
-// Usamos 'avataaars' y 'lorelei' con fondos de colores para que parezcan cromos.
 const AVATAR_CONFIG = [
     { seed: 'Felix', style: 'avataaars', bg: 'b6e3f4' },
     { seed: 'Aneka', style: 'avataaars', bg: 'c0aede' },
     { seed: 'Zoe', style: 'avataaars', bg: 'd1d4f9' },
     { seed: 'Bear', style: 'avataaars', bg: 'ffdfbf' },
     { seed: 'Chester', style: 'avataaars', bg: 'ffd5dc' },
-    { seed: 'Bandit', style: 'lorelei', bg: 'c0aede' }, // Estilo alternativo más cartoon
+    { seed: 'Bandit', style: 'lorelei', bg: 'c0aede' },
     { seed: 'Molly', style: 'lorelei', bg: 'b6e3f4' },
     { seed: 'Buster', style: 'lorelei', bg: 'ffdfbf' }
 ];
@@ -38,16 +35,14 @@ let currentAvatarUrl = null;
 let currentStreak = 0;
 let startTime = 0; 
 
-// --- BANCO DE PREGUNTAS (64 PREGUNTAS) ---
 const bancoPreguntas = [
     { texto: "¿Cuál es un ejemplo de amenaza técnica según el documento?", opciones: ["Phishing", "Baja tensión eléctrica", "Inyección SQL", "Insider"], respuesta: 1, explicacion: "Respuesta correcta: Baja tensión eléctrica." },
     { texto: "¿Qué herramienta open-source permite escaneos de gran escala en red y sistemas?", opciones: ["Nmap", "Fortinet WVS", "OpenVAS", "Nessus Essentials"], respuesta: 2, explicacion: "Respuesta correcta: OpenVAS." },
     { texto: "Una amenaza ambiental típica para un centro de datos sería:", opciones: ["Huracán", "Robo de servidores", "Virus informático", "Pérdida de energía"], respuesta: 0, explicacion: "Respuesta correcta: Huracán." },
+    // ... (Tus 64 preguntas aqui) ...
     { texto: "Herramienta que identifica puertos abiertos y sistema operativo desde consola:", opciones: ["OpenVAS", "Wireshark", "Nessus", "Nmap"], respuesta: 3, explicacion: "Respuesta correcta: Nmap." },
     { texto: "Un IDS normalmente responde:", opciones: ["Eliminando archivos", "Aumentando ancho de banda", "Generando alertas o registrando eventos", "Cambiando contraseñas"], respuesta: 2, explicacion: "Respuesta correcta: Generando alertas o registrando eventos." },
     { texto: "Un objetivo clave de la seguridad de bases de datos es mantener la:", opciones: ["Confidencialidad, integridad y disponibilidad (CIA)", "Fragmentación", "Redundancia excesiva", "Compresión"], respuesta: 0, explicacion: "Respuesta correcta: Confidencialidad, integridad y disponibilidad (CIA)." },
-    // ... (COPIA AQUÍ EL RESTO DE LAS 64 PREGUNTAS DEL CÓDIGO ANTERIOR PARA NO PERDERLAS) ...
-    // IMPORTANTE: Asegúrate de que el array esté completo con las 64 preguntas.
     { texto: "El término SSRF significa:", opciones: ["Safe Session Reset Form", "Simple Service Relay Feature", "Secure Software Risk Framework", "Server-Side Request Forgery"], respuesta: 3, explicacion: "Respuesta correcta: Server-Side Request Forgery." },
     { texto: "El proyecto OWASP tiene como finalidad principal:", opciones: ["Vender cortafuegos", "Producir malware de prueba", "Crear estándares de hardware", "Mejorar la seguridad de aplicaciones web de forma abierta"], respuesta: 3, explicacion: "Respuesta correcta: Mejorar la seguridad de aplicaciones web de forma abierta." },
     { texto: "La gestión de activos se considera importante porque:", opciones: ["Genera llaves criptográficas", "Reduce el jitter", "Actualiza antivirus", "Mantiene control sobre hardware, software y datos"], respuesta: 3, explicacion: "Respuesta correcta: Mantiene control sobre hardware, software y datos." },
@@ -108,7 +103,6 @@ const bancoPreguntas = [
     { texto: "Ventaja de un firewall perimetral bien configurado:", opciones: ["Mejora la batería de los clientes", "Elimina todos los virus", "Reduce la superficie de ataque expuesta a Internet", "Incrementa la velocidad Wi-Fi"], respuesta: 2, explicacion: "Respuesta correcta: Reduce la superficie de ataque expuesta a Internet." }
 ];
 
-// VARIABLES GLOBALES
 let preguntasExamen = [];
 let indiceActual = 0;
 let respuestasUsuario = [];
@@ -120,14 +114,13 @@ let currentRoomId = null;
 let currentMode = 'individual';
 let unsubscribeRoom = null;
 
-// --- FUNCION: INICIAR CARGA DE AVATARES (SOLO AL NECESITAR) ---
+// --- INICIALIZACIÓN DE AVATARES ---
 function initAvatars() {
     const grid = document.getElementById('avatar-grid');
     if(grid.children.length > 1) return; 
     
     grid.innerHTML = '';
     AVATAR_CONFIG.forEach((av, index) => {
-        // API de DiceBear con color de fondo para efecto "tarjeta"
         const url = `https://api.dicebear.com/7.x/${av.style}/svg?seed=${av.seed}&backgroundColor=${av.bg}`;
         const img = document.createElement('img');
         img.src = url;
@@ -162,7 +155,6 @@ function showScreen(screenId) {
     document.getElementById(screenId).classList.remove('hidden');
 }
 
-// --- AUTH ---
 function obtenerDeviceId() {
     let deviceId = localStorage.getItem('device_id_seguro');
     if (!deviceId) {
@@ -205,7 +197,10 @@ onAuthStateChanged(auth, async (user) => {
         if (correosPermitidos.includes(user.email)) {
             if (await validarDispositivo(user)) {
                 showScreen('setup-screen');
+                document.getElementById('btn-ranking').classList.remove('hidden');
+                document.getElementById('btn-stats').classList.remove('hidden');
                 document.getElementById('btn-logout').classList.remove('hidden');
+                
                 document.getElementById('user-display').innerText = user.email.split('@')[0];
                 document.getElementById('player-nickname').value = user.email.split('@')[0];
             }
@@ -215,6 +210,8 @@ onAuthStateChanged(auth, async (user) => {
         }
     } else {
         showScreen('auth-screen');
+        document.getElementById('btn-ranking').classList.add('hidden');
+        document.getElementById('btn-stats').classList.add('hidden');
         document.getElementById('btn-logout').classList.add('hidden');
     }
 });
@@ -222,7 +219,7 @@ onAuthStateChanged(auth, async (user) => {
 document.getElementById('btn-google').addEventListener('click', () => signInWithPopup(auth, new GoogleAuthProvider()));
 document.getElementById('btn-logout').addEventListener('click', () => { if(confirm("¿Salir?")) { signOut(auth); location.reload(); } });
 
-// --- INICIAR DESDE DROPDOWN ---
+// --- INICIAR ---
 document.getElementById('btn-start').addEventListener('click', () => {
     const modo = document.getElementById('mode-select').value;
     const tiempo = document.getElementById('time-select').value;
@@ -231,7 +228,6 @@ document.getElementById('btn-start').addEventListener('click', () => {
     else { tiempoRestante = -1; }
 
     if (modo === 'multiplayer') {
-        // Muestra pantalla de avatar SOLO si es multiplayer
         showScreen('avatar-screen');
         initAvatars(); 
         currentMode = 'multiplayer';
@@ -257,7 +253,6 @@ document.getElementById('back-to-avatar').addEventListener('click', () => showSc
 
 document.getElementById('btn-stats').addEventListener('click', () => { cargarGrafico(); document.getElementById('stats-modal').classList.remove('hidden'); });
 
-// --- MULTIPLAYER ---
 const SALAS_PREDEFINIDAS = ["SALA_ALPHA", "SALA_BETA", "SALA_GAMMA", "SALA_DELTA"];
 
 function mostrarSelectorSalas() {
@@ -281,6 +276,22 @@ function mostrarSelectorSalas() {
 async function unirseASala(salaId) {
     currentRoomId = salaId;
     const salaRef = doc(db, "salas_activas", salaId);
+    const salaSnap = await getDoc(salaRef);
+    let tiempoDeLaSala = parseInt(document.getElementById('time-select').value);
+
+    if (salaSnap.exists() && salaSnap.data().jugadores && salaSnap.data().jugadores.length > 0) {
+        const config = salaSnap.data().configTiempo;
+        if(config) {
+            tiempoDeLaSala = config;
+            alert(`Tiempo sincronizado con la sala: ${tiempoDeLaSala == 'infinity' ? 'Sin límite' : tiempoDeLaSala + ' min'}.`);
+        }
+    } else {
+        await setDoc(salaRef, { configTiempo: tiempoDeLaSala }, { merge: true });
+    }
+
+    if (tiempoDeLaSala !== 'infinity') { tiempoRestante = parseInt(tiempoDeLaSala) * 60; } 
+    else { tiempoRestante = -1; }
+
     const nick = document.getElementById('player-nickname').value || currentUserEmail.split('@')[0];
     const jugadorData = { name: nick, avatar: currentAvatarUrl };
 
@@ -298,12 +309,9 @@ async function unirseASala(salaId) {
             
             jugadores.forEach(p => { 
                 const name = p.name || p; 
-                // Fallback si no tiene avatar (usuarios antiguos)
                 const av = p.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=default&backgroundColor=e0e0e0';
                 listDiv.innerHTML += `<div class="player-badge"><img src="${av}" class="lobby-avatar-small"> ${name}</div>`; 
             });
-            
-            document.getElementById('lobby-status-text').innerText = `Agentes: ${jugadores.length} (Mínimo 2)`;
             
             const btnStart = document.getElementById('btn-start-war');
             if (jugadores.length >= 2) btnStart.classList.remove('hidden');
@@ -325,7 +333,6 @@ document.getElementById('btn-start-war').addEventListener('click', async () => {
     await updateDoc(salaRef, { estado: 'jugando' });
 });
 
-// --- QUIZ ENGINE ---
 function iniciarQuizMultiplayer() {
     if (unsubscribeRoom) unsubscribeRoom();
     preguntasExamen = [...bancoPreguntas].sort(() => 0.5 - Math.random());
@@ -388,7 +395,7 @@ function mostrarResultadoInmediato(sel) {
     
     const div = document.createElement('div');
     div.className = 'explanation-feedback';
-    div.innerHTML = `<strong>Explicación:</strong> ${preguntasExamen[indiceActual].explicacion}`;
+    div.innerHTML = `<strong>Explicación:</strong> ${pregunta.explicacion}`;
     document.getElementById('options-container').appendChild(div);
     
     respuestasUsuario.push(sel);
@@ -448,12 +455,12 @@ async function terminarQuiz(abandono = false) {
     });
     const nota = Math.round((aciertos / preguntasExamen.length) * 100);
     const nick = document.getElementById('player-nickname').value || currentUserEmail.split('@')[0];
+    const finalAvatar = currentAvatarUrl || 'https://api.dicebear.com/7.x/avataaars/svg?seed=default';
 
-    // SI ES MULTIPLAYER, GUARDAR EN SALA
     if (currentMode === 'multiplayer' && currentRoomId) {
         await addDoc(collection(db, `salas_activas/${currentRoomId}/resultados`), {
             user: nick,
-            avatar: currentAvatarUrl,
+            avatar: finalAvatar,
             score: nota,
             correctas: aciertos,
             timeTaken: tiempoFinal,
@@ -463,15 +470,13 @@ async function terminarQuiz(abandono = false) {
         escucharResultadosSala();
         document.getElementById('room-results-box').classList.remove('hidden');
         
-        // Mostrar avatar propio también
         const avatarImg = document.getElementById('final-avatar-display');
-        avatarImg.src = currentAvatarUrl;
+        avatarImg.src = finalAvatar;
         avatarImg.classList.remove('hidden');
     } else {
-        // MODO INDIVIDUAL
         document.getElementById('room-results-box').classList.add('hidden');
-        document.getElementById('final-avatar-display').classList.add('hidden'); // Ocultar avatar si es individual
-        guardarHistorialLocal(nota);
+        document.getElementById('final-avatar-display').classList.add('hidden');
+        if(currentMode === 'exam') guardarHistorialLocal(nota);
     }
 
     showScreen('result-screen');
@@ -555,7 +560,6 @@ function createConfetti() {
     }
 }
 
-// VOLUMEN
 document.getElementById('volume-slider').addEventListener('input', (e) => {
     document.querySelectorAll('audio').forEach(a => { a.volume = e.target.value; a.muted = (e.target.value == 0); });
 });
