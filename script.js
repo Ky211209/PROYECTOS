@@ -129,7 +129,6 @@ function playClick() {
 function initAvatars() {
     const grid = document.getElementById('avatar-grid');
     if(grid.children.length > 1) return; 
-    
     grid.innerHTML = '';
     AVATAR_CONFIG.forEach((av, index) => {
         const url = `https://api.dicebear.com/7.x/${av.style}/svg?seed=${av.seed}&backgroundColor=${av.bg}`;
@@ -295,13 +294,11 @@ function iniciarJuegoReal() {
     } 
     else if (modo === 'study') {
         currentMode = 'study';
-        // MODO ESTUDIO: 64 PREGUNTAS ALEATORIAS
         preguntasExamen = [...bancoPreguntas].sort(() => 0.5 - Math.random());
         iniciarInterfazQuiz();
     } 
     else {
         currentMode = 'exam';
-        // MODO EXAMEN: 20 PREGUNTAS ALEATORIAS
         preguntasExamen = [...bancoPreguntas].sort(() => 0.5 - Math.random()).slice(0, 20);
         iniciarInterfazQuiz();
     }
