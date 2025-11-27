@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, createUserWithAndPassword, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, collection, addDoc, query, orderBy, limit, onSnapshot, where, deleteDoc, updateDoc, arrayUnion, arrayRemove, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -125,8 +125,8 @@ let currentUserEmail = "";
 let currentRoomId = null;
 let currentMode = 'individual';
 let unsubscribeRoom = null;
-let jugadorActualId = null; 
-let jugadorActualTemporalId = null; 
+let jugadorActualId = null; // ID ÚNICO: user.uid de Firebase
+let jugadorActualTemporalId = null; // ID TEMPORAL para la sala (para la sesión actual)
 
 
 function playClick() {
@@ -169,16 +169,15 @@ function hablar(texto, callback) {
     synth.speak(utterance);
 }
 
+// *** LÓGICA DE CARGA REEMPLAZADA: ELIMINAR EL TIMEOUT FIJO ***
+// La pantalla de carga se ocultará al final de onAuthStateChanged
 window.addEventListener('load', () => {
-    // Timeout ajustado a 2 segundos para asegurar la inicialización de Firebase
-    setTimeout(() => document.getElementById('app-loader').classList.add('hidden'), 2000);
+    // Ya no se usa un timeout fijo aquí.
 });
 
-// Lógica para limpiar la sala al cerrar la ventana (mejorado)
+// Lógica para limpiar la sala al cerrar la ventana
 window.addEventListener('beforeunload', async (e) => {
-    // Usar el ID temporal de la sala para la limpieza
     if (currentRoomId && jugadorActualTemporalId) {
-        // Mejor intento de limpieza en cierre de página
         await limpiarSala(currentRoomId).catch(err => console.error("Fallo al limpiar sala en beforeunload:", err));
     }
     
@@ -203,7 +202,7 @@ function obtenerDeviceId() {
     return deviceId;
 }
 
-// ** FUNCIÓN validarDispositivo (Corregida para operar en silencio) **
+// ** FUNCIÓN validarDispositivo (Silencioso)**
 async function validarDispositivo(user) {
     const email = user.email;
     currentUserEmail = email;
@@ -229,6 +228,7 @@ async function validarDispositivo(user) {
                     const oldDeviceId = lista.shift(); 
                     lista.push(miDeviceId);
                     await setDoc(docRef, { dispositivos: lista }, { merge: true });
+                    // NO SE MUESTRA ALERTA
                     return true;
                 }
                 
@@ -261,6 +261,7 @@ function toggleHeaderButtons() {
 
 document.getElementById('mode-select').addEventListener('change', toggleHeaderButtons);
 
+// *** ON AUTH STATE CHANGED (INCLUYE OCULTAR EL LOADER AL FINAL) ***
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         // Asignar user.uid al ID de jugador permanente
@@ -300,6 +301,9 @@ onAuthStateChanged(auth, async (user) => {
         document.getElementById('header-user-info').classList.add('hidden');
         jugadorActualId = null; 
     }
+    
+    // *** SOLUCIÓN DE CARGA: OCULTAR EL LOADER AQUÍ, CUANDO LA AUTENTICACIÓN ESTÁ RESUELTA ***
+    document.getElementById('app-loader').classList.add('hidden');
 });
 
 document.getElementById('btn-google').addEventListener('click', () => signInWithPopup(auth, new GoogleAuthProvider()).catch(e => {
@@ -419,6 +423,7 @@ async function unirseASala(salaId) {
         return;
     }
 
+    // *** RESTRICCIÓN DE SESIÓN ÚNICA ***
     const salaActiva = await verificarSesionActivaEnBatalla(jugadorActualId);
 
     if (salaActiva) {
@@ -446,11 +451,11 @@ async function unirseASala(salaId) {
 
     const nick = document.getElementById('player-nickname').value || currentUserEmail.split('@')[0];
     
-    // Generar ID TEMPORAL para la sala (para la sesión actual/dispositivo)
+    // Generar ID TEMPORAL para la sala (ID de la sesión de batalla)
     jugadorActualTemporalId = `${jugadorActualId}_${Date.now()}`;
     
     const jugadorData = { 
-        id: jugadorActualTemporalId, // ID temporal usado para la gestión del array
+        id: jugadorActualTemporalId, // ID temporal usado para la gestión del array (salida limpia)
         uid: jugadorActualId, // ID permanente (user.uid) para la restricción de sesión
         name: nick, 
         avatar: currentAvatarUrl,
@@ -498,7 +503,6 @@ async function unirseASala(salaId) {
 
 // ** FUNCIÓN limpiarSala (USANDO ID TEMPORAL para la sala) **
 async function limpiarSala(salaId) {
-    // Usar el ID TEMPORAL de la sala para la limpieza
     if(!salaId || !jugadorActualTemporalId) return;
     
     const salaRef = doc(db, "salas_activas", salaId);
@@ -722,8 +726,6 @@ async function terminarQuiz(abandono = false) {
         const sfxFail = document.getElementById('fail-sound');
         const vol = document.getElementById('volume-slider').value;
         sfxWin.volume = vol; sfxFail.volume = vol;
-
-        if (nota >= 70) sfxWin.play(); else sfxFail.play();
 
         msg.className = '';
         if (abandono) {
