@@ -1,6 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc, collection, addDoc, query, orderBy, limit, onSnapshot, where, deleteDoc, updateDoc, arrayUnion, arrayRemove, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js"; // Mantener todos los imports para evitar errores
+// Se mantienen los imports de Firestore para ranking y historial
+import { getFirestore, doc, getDoc, setDoc, collection, addDoc, query, orderBy, limit, onSnapshot, where, deleteDoc, updateDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 // --- 1. CONFIGURACIÓN (PROYECTO: autenticacion-8faac) ---
 const firebaseConfig = {
@@ -18,25 +19,47 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 // --- 2. LISTA DE CORREOS AUTORIZADOS Y DIFERENCIADOS ---
-const correosDosDispositivos = [
-    "dpachecog2@unemi.edu.ec", "htigrer@unemi.edu.ec", "sgavilanezp2@unemi.edu.ec", 
-    "jzamoram9@unemi.edu.ec", "fcarrillop@unemi.edu.ec", "naguilarb@unemi.edu.ec", 
-    "kholguinb2@unemi.edu.ec"
+const correosDosDispositivos = ["dpachecog2@unemi.edu.ec", "htigrer@unemi.edu.ec", "sgavilanezp2@unemi.edu.ec", "jzamoram9@unemi.edu.ec", "fcarrillop@unemi.edu.ec", "naguilarb@unemi.edu.ec", "kholguinb2@unemi.edu.ec"];
+const correosUnDispositivo = ["cnavarretem4@unemi.edu.ec", "gorellanas2@unemi.edu.ec", "ehidalgoc4@unemi.edu.ec", "lbrionesg3@unemi.edu.ec", "xsalvadorv@unemi.edu.ec", "nbravop4@unemi.edu.ec", "jmoreirap6@unemi.edu.ec", "jcastrof8@unemi.edu.ec", "jcaleroc3@unemi.edu.ec"];
+const correosPermitidos = [...correosDosDispositivos, ...correosUnDispositivo];
+
+// --- 3. CONFIGURACIÓN DE AVATARES (Mantenido si el HTML lo usa) ---
+const AVATAR_CONFIG = [
+    { seed: 'Felix', style: 'avataaars', bg: 'b6e3f4' },
+    { seed: 'Aneka', style: 'avataaars', bg: 'c0aede' },
+    { seed: 'Zoe', style: 'avataaars', bg: 'd1d4f9' },
+    { seed: 'Bear', style: 'avataaars', bg: 'ffdfbf' },
+    { seed: 'Chester', style: 'avataaars', bg: 'ffd5dc' },
+    { seed: 'Bandit', style: 'lorelei', bg: 'c0aede' },
+    { seed: 'Molly', style: 'lorelei', bg: 'b6e3f4' },
+    { seed: 'Buster', style: 'lorelei', bg: 'ffdfbf' }
 ];
 
-const correosUnDispositivo = [
-    "cnavarretem4@unemi.edu.ec", "gorellanas2@unemi.edu.ec", "ehidalgoc4@unemi.edu.ec", 
-    "lbrionesg3@unemi.edu.ec", "xsalvadorv@unemi.edu.ec", "nbravop4@unemi.edu.ec", 
-    "jmoreirap6@unemi.edu.ec", "jcastrof8@unemi.edu.ec", "jcaleroc3@unemi.edu.ec"
-];
+// --- 4. VARIABLES GLOBALES BÁSICAS (Limpia) ---
+let currentAvatarUrl = null;
+let currentStreak = 0;
+let startTime = 0; 
+let preguntasExamen = []; 
+let indiceActual = 0;
+let respuestasUsuario = []; 
+let seleccionTemporal = null; 
+let tiempoRestante = 0;
+let intervaloTiempo;
+let currentUserEmail = "";
+let currentMode = 'individual';
+let uidJugadorPermanente = null; // Variable única para el UID
 
-const correosPermitidos = [
-    ...correosDosDispositivos, 
-    ...correosUnDispositivo
-];
+// REFERENCIAS HTML (Aseguradas para todas las pantallas)
+const authScreen = document.getElementById('auth-screen');
+const setupScreen = document.getElementById('setup-screen');
+const quizScreen = document.getElementById('quiz-screen');
+const resultScreen = document.getElementById('result-screen');
+const reviewScreen = document.getElementById('review-screen');
+const btnLogout = document.getElementById('btn-logout');
+const btnNextQuestion = document.getElementById('btn-next-question');
 
-// --- 3. BANCO DE PREGUNTAS (Versión extendida y verificada) ---
-// NOTA: Se ha usado tu última versión conocida, añadiendo la extensión final de las preguntas para mantener el set completo.
+
+// --- 5. BANCO DE PREGUNTAS COMPLETO (Se utiliza la versión final verificada) ---
 const bancoPreguntas = [
     { texto: "¿Cuál es un ejemplo de amenaza técnica según el documento?", opciones: ["Phishing", "Baja tensión eléctrica", "Inyección SQL", "Insider"], respuesta: 1, explicacion: "Respuesta correcta: Baja tensión eléctrica (Fallo técnico/suministro)." },
     { texto: "¿Qué herramienta open-source permite escaneos de gran escala en red y sistemas?", opciones: ["Nmap", "Fortinet WVS", "OpenVAS", "Nessus Essentials"], respuesta: 0, explicacion: "Respuesta correcta: Nmap (Herramienta fundamental para escaneo y mapeo de redes)." },
@@ -46,7 +69,7 @@ const bancoPreguntas = [
     { texto: "El operador “eq” en una regla de firewall sirve para:", opciones: ["Cambiar protocolo", "Hacer ping", "Filtrar un número de puerto específico", "Denegar IPs"], respuesta: 2, explicacion: "Respuesta correcta: Filtrar un número de puerto específico" },
     { texto: "Una falla criptográfica puede conducir principalmente a:", opciones: ["Exposición de datos confidenciales", "Jitter elevando", "DoS", "Aumento de latencia"], respuesta: 0, explicacion: "Respuesta correcta: Exposición de datos confidenciales" },
     { texto: "¿Qué categoría de activo abarca servidores, routers y estaciones de trabajo?", opciones: ["Data", "Lines & Networks", "Hardware", "Software"], respuesta: 2, explicacion: "Respuesta correcta: Hardware" },
-    { texto: "Una amenaza ambiental típica para un centro de datos sería:", opciones: ["Huracán", "Robo de servidores", "Virus informático", "Pérdida de energía"], respuesta: 0, explicacion: "Respuesta correcta: Huracán (Desastre natural)." },
+    { texto: "Una amenaza ambiental típica para un centro de datos sería:", opciones: ["Huracán", "Robo de servidores", "Virus informático", "Pérdida de energía"], respuesta: 0, explicacion: "Respuesta correcta: Huracán (Desastre natural/climático)." },
     { texto: "¿Qué nivel de riesgo requiere medidas inmediatas según la tabla de niveles?", opciones: ["Alto/Extremo", "Bajo", "Negligible", "Medio"], respuesta: 0, explicacion: "Respuesta correcta: Alto/Extremo" },
     { texto: "El estándar OWASP ASVS se utiliza para:", opciones: ["Generar certificados SSL", "Probar hardware", "Cifrado TLS", "Verificar controles de seguridad en aplicaciones"], respuesta: 3, explicacion: "Respuesta correcta: Verificar controles de seguridad en aplicaciones" },
     { texto: "Los ataques pasivos se caracterizan por:", opciones: ["Inyectar malware", "Ejecutar DoS", "Destruir hardware", "Escuchar y capturar tráfico"], respuesta: 3, explicacion: "Respuesta correcta: Escuchar y capturar tráfico" },
@@ -263,7 +286,7 @@ function cargarPregunta() {
     }
 }
 
-// --- FUNCIÓN MODIFICADA PARA SEPARAR EL MODO ESTUDIO/EXAMEN ---
+// --- FUNCIÓN MODIFICADA para separar el modo estudio/examen ---
 function seleccionarOpcion(index, btnClickeado) {
     const isStudyMode = document.getElementById('mode-select').value === 'study';
 
@@ -285,7 +308,7 @@ function seleccionarOpcion(index, btnClickeado) {
     }
 }
 
-// --- NUEVA FUNCIÓN: Muestra respuesta y explicación en modo Estudio ---
+// --- Muestra respuesta y explicación en modo Estudio ---
 function mostrarResultadoInmediato(seleccionada) {
     const pregunta = preguntasExamen[indiceActual];
     const correcta = pregunta.respuesta;
@@ -350,10 +373,14 @@ function iniciarReloj() {
 function terminarQuiz() {
     clearInterval(intervaloTiempo);
     let aciertos = 0;
+    // La nota es sobre 100
+    const totalPreguntas = preguntasExamen.length;
+    const nota = totalPreguntas > 0 ? Math.round((aciertos / totalPreguntas) * 100) : 0;
+    
     preguntasExamen.forEach((p, i) => { if (respuestasUsuario[i] === p.respuesta) aciertos++; });
     quizScreen.classList.add('hidden');
     resultScreen.classList.remove('hidden');
-    document.getElementById('score-final').innerText = `${aciertos} / ${preguntasExamen.length}`;
+    document.getElementById('score-final').innerText = `${aciertos} / ${totalPreguntas}`;
     
     // --- Ocultar botón Revisar Respuestas si es modo Estudio ---
     const modeSelect = document.getElementById('mode-select');
