@@ -132,6 +132,7 @@ function playClick() {
 function initAvatars() {
     const grid = document.getElementById('avatar-grid');
     if(grid.children.length > 1) return; 
+    
     grid.innerHTML = '';
     AVATAR_CONFIG.forEach((av, index) => {
         const url = `https://api.dicebear.com/7.x/${av.style}/svg?seed=${av.seed}&backgroundColor=${av.bg}`;
@@ -209,7 +210,7 @@ async function validarDispositivo(user) {
             } else {
                 // SOLUCIÓN DE REEMPLAZO INTELIGENTE (FIFO):
                 if (limite > 0) {
-                    const oldDeviceId = lista.shift(); // Eliminar el más antiguo (FIFO)
+                    const oldDeviceId = lista.shift(); 
                     lista.push(miDeviceId);
                     await setDoc(docRef, { dispositivos: lista }, { merge: true });
                     alert(`✅ Acceso concedido. Su dispositivo anterior ha sido reemplazado para cumplir con el límite de ${limite} dispositivos.`);
@@ -686,16 +687,6 @@ async function guardarHistorialFirebase(nota) {
             email: currentUserEmail,
             score: nota,
             date: new Date()
-        });
-    } catch (e) { console.error(e); }
-}
-
-async function guardarPuntajeGlobal(nota) {
-    try {
-        await addDoc(collection(db, "ranking_global"), {
-            email: currentUserEmail,
-            score: nota,
-            dateString: new Date().toLocaleDateString() 
         });
     } catch (e) { console.error(e); }
 }
