@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://www.gstatic.com">
     <link rel="preconnect" href="https://api.dicebear.com">
     
-    <link rel="stylesheet" href="style.css?v=310">
+    <link rel="stylesheet" href="style.css?v=260">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -17,7 +17,7 @@
 
     <div id="app-loader">
         <div class="spinner"></div>
-        <p>Conectando...</p>
+        <p>Cargando...</p>
     </div>
 
     <header>
@@ -27,14 +27,14 @@
         </div>
         
         <div style="display: flex; align-items: center; gap: 10px;">
-            
             <div id="header-user-info" class="header-user-info hidden">
                 <span id="header-username" class="header-username-text">Usuario</span>
                 <img id="header-photo" src="" class="header-profile-pic" alt="Perfil">
             </div>
             
             <div class="header-controls">
-                <button id="btn-ranking" class="btn-icon hidden locked-btn" title="Ranking Diario"><i class="fa-solid fa-trophy"></i></button>
+                <button id="btn-ranking" class="btn-icon hidden locked-btn" title="Ranking Global"><i class="fa-solid fa-trophy"></i></button>
+                <button id="btn-stats" class="btn-icon hidden locked-btn" title="Mis Estadísticas"><i class="fa-solid fa-chart-pie"></i></button>
                 
                 <div class="volume-control-box">
                     <button id="btn-mute" class="btn-icon"><i class="fa-solid fa-volume-high" id="vol-icon"></i></button>
@@ -164,10 +164,19 @@
         <button onclick="location.reload()" class="btn-primary" style="margin-top: 20px;">Cerrar</button>
     </div>
 
+    <div id="stats-modal" class="hidden modal-overlay">
+        <div class="modal-card">
+            <button id="close-stats" class="close-btn">&times;</button>
+            <h2 style="color: #1a73e8;">Mi Historial</h2>
+            <canvas id="progressChart"></canvas>
+            <p style="font-size: 0.8rem; color: #666; margin-top: 10px;">* Solo exámenes finalizados.</p>
+        </div>
+    </div>
+
     <div id="ranking-modal" class="hidden modal-overlay">
         <div class="modal-card">
             <button id="close-ranking" class="close-btn">&times;</button>
-            <h2 style="color: #fbbc04;">🏆 Ranking Diario (Hoy)</h2>
+            <h2 style="color: #fbbc04;">🏆 Ranking Global</h2>
             <div id="ranking-list" style="text-align: left; max-height: 300px; overflow-y: auto; margin-top: 15px;"></div>
         </div>
     </div>
@@ -187,9 +196,8 @@
     <audio id="fail-sound" preload="auto"><source src="https://www.soundjay.com/misc/sounds/fail-trombone-01.mp3" type="audio/mpeg"></audio>
     <audio id="correct-sound" preload="auto"><source src="https://www.soundjay.com/buttons/sounds/button-3.mp3" type="audio/mpeg"></audio>
     <audio id="click-sound" preload="auto"><source src="https://www.soundjay.com/buttons/sounds/button-16.mp3" type="audio/mpeg"></audio>
-    
     <div id="confetti-wrapper" class="hidden"></div>
 
-    <script type="module" src="script.js?v=310"></script>
+    <script type="module" src="script.js?v=230"></script>
 </body>
 </html>
