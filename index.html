@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://www.gstatic.com">
     <link rel="preconnect" href="https://api.dicebear.com">
     
-    <link rel="stylesheet" href="style.css?v=140">
+    <link rel="stylesheet" href="style.css?v=145">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -17,7 +17,7 @@
 
     <div id="app-loader">
         <div class="spinner"></div>
-        <p>Cargando perfil...</p>
+        <p>Cargando...</p>
     </div>
 
     <header>
@@ -42,11 +42,14 @@
 
     <div id="combo-display" class="hidden">¡RACHA x3! 🔥</div>
 
-    <div class="container hidden" id="auth-screen">
-        <h2>Bienvenido Agente</h2>
-        <p style="color: #666; font-size: 0.9rem;">Inicia sesión para acceder al simulador</p>
+    <div class="container hidden" id="auth-screen" style="border: none; box-shadow: none; padding-top: 0;">
+        <h1 style="color: #1a73e8; font-size: 2.5rem; font-weight: 800; margin-bottom: 10px;">Bienvenido</h1>
+        
+        <p style="color: #5f6368; font-size: 1.1rem; margin-bottom: 30px;">Accede con tu cuenta institucional</p>
+        
         <button id="btn-google" class="btn-google-style">
-            <i class="fa-brands fa-google"></i> Acceder con Google
+            <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="G" style="width: 20px; height: 20px;">
+            Ingresar con Google
         </button>
     </div>
 
@@ -169,10 +172,10 @@
 
     <div id="battle-results-modal" class="hidden modal-overlay">
         <div class="modal-card" style="max-width: 700px; width: 95%;">
-            <h2 style="color: #fbbc04; text-transform: uppercase;">🏆 Resultados</h2>
+            <h2 style="color: #fbbc04; text-transform: uppercase;">🏆 Resultados de la Guerra</h2>
             <div id="podium-container" class="podium-container"><div class="spinner"></div></div>
             <div style="margin-top: 20px;">
-                <button onclick="location.reload()" class="btn-secondary" style="border-color: #ea4335; color: #ea4335;">Salir</button>
+                <button onclick="location.reload()" class="btn-secondary" style="border-color: #ea4335; color: #ea4335;">Salir de la Guerra</button>
             </div>
         </div>
     </div>
@@ -183,6 +186,6 @@
     <audio id="correct-sound" preload="auto"><source src="https://www.soundjay.com/buttons/sounds/button-3.mp3" type="audio/mpeg"></audio>
     <div id="confetti-wrapper" class="hidden"></div>
 
-    <script type="module" src="script.js?v=140"></script>
+    <script type="module" src="script.js?v=145"></script>
 </body>
 </html>
