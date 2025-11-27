@@ -1,5 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+// Se mantienen los imports de Firestore para otras funciones (ranking, historial)
 import { getFirestore, doc, getDoc, setDoc, collection, addDoc, query, orderBy, limit, onSnapshot, where, deleteDoc, updateDoc, arrayUnion, arrayRemove, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -44,7 +45,7 @@ let currentAvatarUrl = null;
 let currentStreak = 0;
 let startTime = 0; 
 let jugadorActualData = null; 
-let uidJugadorPermanente = null; // RENOMBRADO: ID ÚNICO user.uid de Firebase (Antes: jugadorActualId)
+let uidJugadorPermanente = null; // ID ÚNICO: user.uid de Firebase (Antes: jugadorActualId)
 let jugadorActualTemporalId = null; // ID TEMPORAL para la sala (para la sesión actual)
 
 // --- BANCO DE PREGUNTAS COMPLETO (64 PREGUNTAS) ---
@@ -174,7 +175,12 @@ window.addEventListener('load', () => {
     // Ya no se usa un timeout fijo aquí.
 });
 
-// Lógica para limpiar la sala al cerrar la ventana
+// *******************************************************************
+// ***** TODAS LAS FUNCIONES DE MULTIJUGADOR COMENTADAS (DESACTIVADAS) *****
+// *******************************************************************
+
+// Lógica para limpiar la sala al cerrar la ventana (COMENTADA)
+/*
 window.addEventListener('beforeunload', async (e) => {
     if (currentRoomId && jugadorActualTemporalId) {
         await limpiarSala(currentRoomId).catch(err => console.error("Fallo al limpiar sala en beforeunload:", err));
@@ -186,6 +192,7 @@ window.addEventListener('beforeunload', async (e) => {
         e.returnValue = '';
     }
 });
+*/
 
 function showScreen(screenId) {
     document.querySelectorAll('.container').forEach(el => el.classList.add('hidden'));
@@ -249,6 +256,7 @@ function toggleHeaderButtons() {
     const btnRanking = document.getElementById('btn-ranking');
     const btnStats = document.getElementById('btn-stats');
     
+    // DESACTIVAR BOTONES DE RANKING/STATS SI EL MODO ES MULTIJUGADOR (ya que el código de multiplayer está comentado)
     if (modo === 'exam') {
         btnRanking.classList.remove('hidden');
         btnStats.classList.remove('hidden');
@@ -338,9 +346,9 @@ function iniciarJuegoReal() {
     else { tiempoRestante = -1; }
 
     if (modo === 'multiplayer') {
-        showScreen('avatar-screen');
-        initAvatars(); 
-        currentMode = 'multiplayer';
+        // EN MODO MULTIJUGADOR, SIMPLEMENTE ENVIAR A LA PANTALLA DE SETUP ORIGINAL
+        alert("El modo multijugador está temporalmente deshabilitado por mantenimiento.");
+        showScreen('setup-screen');
     } 
     else if (modo === 'study') {
         currentMode = 'study';
@@ -356,30 +364,19 @@ function iniciarJuegoReal() {
     }
 }
 
+// *** SECCIÓN MULTIJUGADOR COMENTADA Y DESACTIVADA ***
+// ******************************************************
+
 document.getElementById('btn-confirm-identity').addEventListener('click', () => {
     playClick();
-    mostrarSelectorSalas();
+    // mostrarSelectorSalas(); // COMENTADA
+    alert("El modo multijugador está temporalmente deshabilitado por mantenimiento.");
 });
 
 document.getElementById('back-to-setup').addEventListener('click', () => showScreen('setup-screen'));
-document.getElementById('back-to-avatar').addEventListener('click', () => showScreen('avatar-screen'));
+document.getElementById('back-to-avatar').addEventListener('click', () => showScreen('setup-screen')); // Redirigir a setup
 
-document.getElementById('btn-stats').addEventListener('click', async () => { 
-    try { document.getElementById('stats-modal').classList.remove('hidden'); await cargarGraficoFirebase(); } 
-    catch (e) { console.error("Error al cargar historial:", e); }
-});
-
-document.getElementById('btn-ranking').addEventListener('click', async () => {
-    try { document.getElementById('ranking-modal').classList.remove('hidden'); await cargarRankingGlobal(); } 
-    catch (e) { console.error("Error al cargar ranking:", e); }
-});
-
-document.querySelectorAll('.modal-overlay').forEach(overlay => {
-    overlay.addEventListener('click', (e) => {
-        if (e.target === overlay) overlay.classList.add('hidden');
-    });
-});
-
+/*
 const SALAS_PREDEFINIDAS = ["SALA_FIREWALL", "SALA_ENCRIPTADO", "SALA_ZERO_DAY", "SALA_PHISHING", "SALA_RANSOMWARE", "SALA_BOTNET"];
 
 function mostrarSelectorSalas() {
@@ -402,162 +399,50 @@ function mostrarSelectorSalas() {
     });
 }
 
-// ** NUEVA FUNCIÓN: Verifica si el usuario ya está en alguna sala de batalla **
 async function verificarSesionActivaEnBatalla(uid) {
-    const salasRef = collection(db, "salas_activas");
-    const snapshot = await getDocs(salasRef);
-    let salaEncontrada = null;
-
-    snapshot.forEach(doc => {
-        const jugadores = doc.data().jugadores || [];
-        // Busca si el UID permanente está en el array de jugadores de cualquier sala
-        const jugadorActivo = jugadores.find(j => j.uid === uid);
-        if (jugadorActivo) {
-            salaEncontrada = doc.id;
-        }
-    });
-
-    return salaEncontrada; // Retorna el ID de la sala si está activo, o null
+    // FUNCIÓN COMENTADA
+    return null; 
 }
 
 
-// ** FUNCIÓN unirseASala (USANDO ID TEMPORAL y CON RESTRICCIÓN DE SESIÓN ÚNICA) **
 async function unirseASala(salaId) {
-    if (!uidJugadorPermanente) {
-        alert("Error: ID de usuario no disponible. Intente iniciar sesión nuevamente.");
-        return;
-    }
-
-    // *** RESTRICCIÓN DE SESIÓN ÚNICA ***
-    const salaActiva = await verificarSesionActivaEnBatalla(uidJugadorPermanente);
-
-    if (salaActiva) {
-        alert(`⛔ Acceso Denegado ⛔\nYa te encuentras activo en otra sala de batalla (${salaActiva.replace('SALA_', '')}). Debes salir de esa sesión para iniciar una nueva.`);
-        return;
-    }
-    
-    currentRoomId = salaId;
-    const salaRef = doc(db, "salas_activas", salaId);
-    const salaSnap = await getDoc(salaRef);
-    let tiempoDeLaSala = parseInt(document.getElementById('time-select').value);
-
-    if (salaSnap.exists() && salaSnap.data().jugadores && salaSnap.data().jugadores.length > 0) {
-        const config = salaSnap.data().configTiempo;
-        if(config) tiempoDeLaSala = config;
-    } else {
-        await setDoc(salaRef, { configTiempo: tiempoDeLaSala }, { merge: true });
-    }
-
-    if (tiempoDeLaSala !== 'infinity') { 
-        tiempoRestante = parseInt(tiempoDeLaSala) * 60; 
-    } else { 
-        tiempoRestante = -1; 
-    }
-
-    const nick = document.getElementById('player-nickname').value || currentUserEmail.split('@')[0];
-    
-    // Generar ID TEMPORAL para la sala (ID de la sesión de batalla)
-    jugadorActualTemporalId = `${uidJugadorPermanente}_${Date.now()}`;
-    
-    const jugadorData = { 
-        id: jugadorActualTemporalId, // ID temporal usado para la gestión del array (salida limpia)
-        uid: uidJugadorPermanente, // ID permanente (user.uid) para la restricción de sesión
-        name: nick, 
-        avatar: currentAvatarUrl,
-        email: currentUserEmail 
-    };
-
-    jugadorActualData = jugadorData;
-
-    await setDoc(salaRef, { 
-        jugadores: arrayUnion(jugadorData), 
-        estado: "esperando" 
-    }, { merge: true });
-
-    showScreen('lobby-screen');
-    document.getElementById('lobby-title').innerText = salaId.replace('SALA_', '').replace(/_/g, ' ');
-    document.getElementById('lobby-status-text').innerText = 'Esperando agentes...';
-
-    unsubscribeRoom = onSnapshot(salaRef, (docSnap) => {
-        if (docSnap.exists()) {
-            const data = docSnap.data();
-            const jugadores = data.jugadores || [];
-            const listDiv = document.getElementById('lobby-players');
-            listDiv.innerHTML = '';
-            
-            jugadores.forEach(p => { 
-                const name = p.name || p.email.split('@')[0]; 
-                const av = p.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=default&backgroundColor=e0e0e0';
-                listDiv.innerHTML += `<div class="player-badge"><img src="${av}" class="lobby-avatar-small"> ${name}</div>`; 
-            });
-            
-            const btnStart = document.getElementById('btn-start-war');
-            // Host basado en el ID TEMPORAL, para la sesión actual
-            const esHost = jugadores.length > 0 && jugadores[0].id === jugadorActualTemporalId;
-
-            if (esHost && jugadores.length >= 2 && data.estado === 'esperando') {
-                btnStart.classList.remove('hidden');
-            } else {
-                btnStart.classList.add('hidden');
-            }
-
-            if (data.estado === 'jugando') iniciarQuizMultiplayer();
-        }
-    });
+    // FUNCIÓN COMENTADA
+    alert("El modo batalla está inactivo.");
+    return;
 }
 
-// ** FUNCIÓN limpiarSala (USANDO ID TEMPORAL para la sala) **
 async function limpiarSala(salaId) {
-    if(!salaId || !jugadorActualTemporalId) return;
-    
-    const salaRef = doc(db, "salas_activas", salaId);
-    
-    try {
-        const snap = await getDoc(salaRef);
-        
-        if(snap.exists()) {
-            const jugadores = snap.data().jugadores || [];
-            
-            // Filtrar para eliminar al jugador actual por ID TEMPORAL
-            const jugadoresActualizados = jugadores.filter(j => j.id !== jugadorActualTemporalId);
-            
-            await updateDoc(salaRef, { 
-                jugadores: jugadoresActualizados 
-            });
-            
-            if(jugadoresActualizados.length === 0) {
-                await updateDoc(salaRef, { 
-                    estado: 'esperando',
-                    jugadores: [], 
-                    configTiempo: null 
-                });
-            }
-        }
-    } catch (e) { 
-        console.error("❌ Error limpiando sala:", e); 
-    }
+    // FUNCIÓN COMENTADA
+    return;
 }
 
 document.getElementById('btn-leave-lobby').addEventListener('click', async () => {
-    if (confirm("¿Abandonar escuadrón?")) {
-        if (currentRoomId) {
-            await limpiarSala(currentRoomId);
-            if (unsubscribeRoom) unsubscribeRoom();
-            location.reload();
-        }
-    }
+    // FUNCIÓN COMENTADA
+    alert("No puedes salir del lobby porque está deshabilitado.");
+    location.reload();
 });
 
 document.getElementById('btn-start-war').addEventListener('click', async () => {
-    const salaRef = doc(db, "salas_activas", currentRoomId);
-    await updateDoc(salaRef, { estado: 'jugando' });
+    // FUNCIÓN COMENTADA
+    alert("El inicio de la batalla está deshabilitado.");
 });
 
 function iniciarQuizMultiplayer() {
-    if (unsubscribeRoom) unsubscribeRoom();
-    preguntasExamen = [...bancoPreguntas].sort(() => 0.5 - Math.random());
+    // FUNCIÓN COMENTADA
+    alert("El inicio de la batalla está deshabilitado.");
     iniciarInterfazQuiz();
 }
+
+function renderBattlePodium() {
+    // FUNCIÓN COMENTADA
+    return;
+}
+
+*/
+// *******************************************************************
+// ***** FIN DE LAS FUNCIONES DE MULTIJUGADOR COMENTADAS *****
+// ******************************************************
+
 
 function iniciarInterfazQuiz() {
     if(currentMode === 'exam') {
@@ -697,6 +582,8 @@ async function terminarQuiz(abandono = false) {
     const finalAvatar = currentAvatarUrl || 'https://api.dicebear.com/7.x/avataaars/svg?seed=default';
 
     if (currentMode === 'multiplayer' && currentRoomId) {
+        // Lógica de guardar resultados de batalla COMENTADA
+        /*
         await addDoc(collection(db, `salas_activas/${currentRoomId}/resultados`), {
             user: nick,
             avatar: finalAvatar,
@@ -711,6 +598,12 @@ async function terminarQuiz(abandono = false) {
         
         renderBattlePodium();
         document.getElementById('battle-results-modal').classList.remove('hidden');
+        */
+        // Simplemente salir si el modo es multiplayer y está deshabilitado
+        showScreen('result-screen');
+        document.getElementById('score-final').innerText = `${nota}/100`;
+        document.getElementById('custom-msg').innerText = "Modo Batalla Deshabilitado";
+        
     } else {
         document.getElementById('room-results-box').classList.add('hidden');
         document.getElementById('final-avatar-display').classList.remove('hidden');
@@ -750,35 +643,12 @@ async function terminarQuiz(abandono = false) {
 
 document.getElementById('btn-exit-war-modal').addEventListener('click', async () => { location.reload(); });
 
+/*
 function renderBattlePodium() {
-    const q = query(collection(db, `salas_activas/${currentRoomId}/resultados`), orderBy("score", "desc"));
-    onSnapshot(q, (snap) => {
-        const container = document.getElementById('podium-container');
-        container.innerHTML = '';
-        let players = [];
-        snap.forEach(doc => players.push(doc.data()));
-        players.slice(0, 5).forEach((p, index) => {
-            const height = Math.min(100, Math.max(20, p.score)) + '%'; 
-            
-            const col = document.createElement('div');
-            col.className = 'podium-column';
-            col.classList.add(`rank-${index + 1}`); 
-            
-            let barStyle = '';
-            if (index === 0) barStyle = 'background: linear-gradient(to top, #fbc02d, #fff176); color: #5f4300;';
-            else if (index === 1) barStyle = 'background: linear-gradient(to top, #9e9e9e, #e0e0e0); color: #424242;';
-            else if (index === 2) barStyle = 'background: linear-gradient(to top, #8d6e63, #d7ccc8); color: #3e2723;';
-            else barStyle = 'background: linear-gradient(to top, #1a73e8, #4285f4); color: white;';
-
-            col.innerHTML = `
-                <div class="podium-avatar" style="background-image: url('${p.avatar}'); background-size: cover;"></div>
-                <div class="podium-name">${p.user}</div>
-                <div class="podium-bar" style="height: ${height}; ${barStyle}">${p.score}</div>
-            `;
-            container.appendChild(col);
-        });
-    });
+    // FUNCIÓN COMENTADA
+    return;
 }
+*/
 
 async function guardarHistorialFirebase(nota) {
     try {
