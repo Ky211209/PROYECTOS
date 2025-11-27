@@ -44,7 +44,7 @@ let currentAvatarUrl = null;
 let currentStreak = 0;
 let startTime = 0; 
 let jugadorActualData = null; 
-let jugadorActualId = null; // ID ÚNICO: user.uid de Firebase
+let uidJugadorPermanente = null; // RENOMBRADO: ID ÚNICO user.uid de Firebase (Antes: jugadorActualId)
 let jugadorActualTemporalId = null; // ID TEMPORAL para la sala (para la sesión actual)
 
 // --- BANCO DE PREGUNTAS COMPLETO (64 PREGUNTAS) ---
@@ -125,7 +125,7 @@ let currentUserEmail = "";
 let currentRoomId = null;
 let currentMode = 'individual';
 let unsubscribeRoom = null;
-let jugadorActualId = null; // ID ÚNICO: user.uid de Firebase
+let uidJugadorPermanente = null; // ID ÚNICO: user.uid de Firebase (Antes: jugadorActualId)
 let jugadorActualTemporalId = null; // ID TEMPORAL para la sala (para la sesión actual)
 
 
@@ -268,7 +268,7 @@ onAuthStateChanged(auth, async (user) => {
 
     if (user) {
         // Asignar user.uid al ID de jugador permanente
-        jugadorActualId = user.uid; 
+        uidJugadorPermanente = user.uid; 
         
         if (correosPermitidos.includes(user.email)) {
             if (await validarDispositivo(user)) {
@@ -302,7 +302,7 @@ onAuthStateChanged(auth, async (user) => {
         document.getElementById('btn-stats').classList.add('hidden');
         document.getElementById('btn-logout').classList.add('hidden');
         document.getElementById('header-user-info').classList.add('hidden');
-        jugadorActualId = null; 
+        uidJugadorPermanente = null; 
     }
 });
 
@@ -423,13 +423,13 @@ async function verificarSesionActivaEnBatalla(uid) {
 
 // ** FUNCIÓN unirseASala (USANDO ID TEMPORAL y CON RESTRICCIÓN DE SESIÓN ÚNICA) **
 async function unirseASala(salaId) {
-    if (!jugadorActualId) {
+    if (!uidJugadorPermanente) {
         alert("Error: ID de usuario no disponible. Intente iniciar sesión nuevamente.");
         return;
     }
 
     // *** RESTRICCIÓN DE SESIÓN ÚNICA ***
-    const salaActiva = await verificarSesionActivaEnBatalla(jugadorActualId);
+    const salaActiva = await verificarSesionActivaEnBatalla(uidJugadorPermanente);
 
     if (salaActiva) {
         alert(`⛔ Acceso Denegado ⛔\nYa te encuentras activo en otra sala de batalla (${salaActiva.replace('SALA_', '')}). Debes salir de esa sesión para iniciar una nueva.`);
@@ -457,11 +457,11 @@ async function unirseASala(salaId) {
     const nick = document.getElementById('player-nickname').value || currentUserEmail.split('@')[0];
     
     // Generar ID TEMPORAL para la sala (ID de la sesión de batalla)
-    jugadorActualTemporalId = `${jugadorActualId}_${Date.now()}`;
+    jugadorActualTemporalId = `${uidJugadorPermanente}_${Date.now()}`;
     
     const jugadorData = { 
         id: jugadorActualTemporalId, // ID temporal usado para la gestión del array (salida limpia)
-        uid: jugadorActualId, // ID permanente (user.uid) para la restricción de sesión
+        uid: uidJugadorPermanente, // ID permanente (user.uid) para la restricción de sesión
         name: nick, 
         avatar: currentAvatarUrl,
         email: currentUserEmail 
@@ -475,7 +475,7 @@ async function unirseASala(salaId) {
     }, { merge: true });
 
     showScreen('lobby-screen');
-    document.getElementById('lobby-title').innerText = salaId.replace('SALA_', '').replace(/_/g, ' ')\;
+    document.getElementById('lobby-title').innerText = salaId.replace('SALA_', '').replace(/_/g, ' ');
     document.getElementById('lobby-status-text').innerText = 'Esperando agentes...';
 
     unsubscribeRoom = onSnapshot(salaRef, (docSnap) => {
@@ -786,7 +786,7 @@ async function guardarHistorialFirebase(nota) {
             email: currentUserEmail,
             score: nota,
             date: new Date(),
-            uid: jugadorActualId // Usar ID de usuario permanente
+            uid: uidJugadorPermanente // Usar ID de usuario permanente
         });
     } catch (e) { console.error(e); }
 }
@@ -795,7 +795,7 @@ async function guardarPuntajeGlobal(nota) {
     try {
         const today = new Date().toLocaleDateString();
         // Usar ID de usuario permanente como ID del documento
-        const docRef = doc(db, "ranking_global", jugadorActualId); 
+        const docRef = doc(db, "ranking_global", uidJugadorPermanente); 
         
         const docSnap = await getDoc(docRef);
         
@@ -822,7 +822,7 @@ async function guardarPuntajeGlobal(nota) {
 async function cargarGraficoFirebase() {
     try {
         // Usar ID de usuario permanente para la consulta
-        const q = query(collection(db, "historial_academico"), where("uid", "==", jugadorActualId), orderBy("date", "desc"), limit(10));
+        const q = query(collection(db, "historial_academico"), where("uid", "==", uidJugadorPermanente), orderBy("date", "desc"), limit(10));
         const querySnapshot = await getDocs(q);
         let history = [];
         querySnapshot.forEach((doc) => { history.push(doc.data()); });
