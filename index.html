@@ -33,8 +33,8 @@
             </div>
             
             <div class="header-controls">
-                <button id="btn-ranking" class="btn-icon hidden locked-btn" title="Ranking Global"><i class="fa-solid fa-trophy"></i></button>
-                <button id="btn-stats" class="btn-icon hidden locked-btn" title="Mis Estadísticas"><i class="fa-solid fa-chart-pie"></i></button>
+                <button id="btn-ranking" class="btn-icon hidden" title="Ranking Global"><i class="fa-solid fa-trophy"></i></button>
+                <button id="btn-stats" class="btn-icon hidden" title="Mis Estadísticas"><i class="fa-solid fa-chart-pie"></i></button>
                 
                 <div class="volume-control-box">
                     <button id="btn-mute" class="btn-icon"><i class="fa-solid fa-volume-high" id="vol-icon"></i></button>
@@ -72,8 +72,7 @@
             <select id="mode-select">
                 <option value="exam">📝 Examen (20 Preguntas)</option>
                 <option value="study">📚 Estudio (Todas las preguntas)</option>
-                <option value="multiplayer">⚔️ Batalla Multiusuarios (64 Preguntas)</option>
-            </select>
+                </select>
         </div>
 
         <div class="control-group">
@@ -93,7 +92,7 @@
                 <p style="font-size: 0.95rem; color: #555; margin: 0;">
                     Hola, <span id="user-display" style="font-weight: bold; color: #1a73e8;">...</span>
                 </p>
-                <img id="user-google-photo" src="" class="google-profile-pic hidden" referrerpolicy="no-referrer">
+                <img id="user-google-photo" src="" alt="Foto" class="google-profile-pic hidden" referrerpolicy="no-referrer">
             </div>
             <div class="verified-badge">
                 <i class="fa-solid fa-square-check"></i> Dispositivo verificado
@@ -101,33 +100,6 @@
         </div>
 
         <button id="btn-start" class="btn-primary" style="margin-top: 20px;">Empezar</button>
-    </div>
-
-    <div class="container hidden" id="avatar-screen">
-        <button id="back-to-setup" class="btn-text"><i class="fa-solid fa-arrow-left"></i> Volver</button>
-        <h2 style="text-align: center;">Elige tu Personaje</h2>
-        <div class="avatar-section">
-            <div class="avatar-grid" id="avatar-grid"><div class="spinner"></div></div>
-            <input type="text" id="player-nickname" placeholder="Tu Apodo" maxlength="12" style="text-align: center;">
-        </div>
-        <button id="btn-confirm-identity" class="btn-primary">BUSCAR SALA <i class="fa-solid fa-radar"></i></button>
-    </div>
-
-    <div class="container hidden" id="rooms-screen">
-        <button id="back-to-avatar" class="btn-text"><i class="fa-solid fa-arrow-left"></i> Volver</button>
-        <h2 style="text-align: center;">Zonas de Guerra</h2>
-        <div id="rooms-list" class="rooms-grid"></div>
-    </div>
-
-    <div class="container hidden" id="lobby-screen">
-        <h2 id="lobby-title" style="color: #1a73e8; text-align: center;">SALA</h2>
-        <div class="lobby-status">
-            <div class="spinner"></div>
-            <p id="lobby-status-text">Esperando agentes...</p>
-        </div>
-        <div id="lobby-players" class="lobby-list"></div>
-        <button id="btn-start-war" class="btn-primary hidden" style="background: #28a745; margin-top: 20px;">¡INICIAR!</button>
-        <button id="btn-leave-lobby" class="btn-secondary" style="margin-top: 10px; color: #ea4335;">Salir</button>
     </div>
 
     <div class="container hidden" id="quiz-screen" style="max-width: 700px;">
@@ -181,16 +153,6 @@
         </div>
     </div>
 
-    <div id="battle-results-modal" class="hidden modal-overlay">
-        <div class="modal-card" style="max-width: 700px; width: 95%;">
-            <h2 style="color: #fbbc04; text-transform: uppercase;">🏆 Resultados de la Guerra</h2>
-            <div id="podium-container" class="podium-container"><div class="spinner"></div></div>
-            <div style="margin-top: 20px;">
-                <button id="btn-exit-war-modal" class="btn-secondary" style="border-color: #ea4335; color: #ea4335;">Salir de la Guerra</button>
-            </div>
-        </div>
-    </div>
-
     <audio id="bg-music" loop preload="auto"><source src="audio/bg_music.mp3" type="audio/mpeg"></audio>
     <audio id="success-sound" preload="auto"><source src="audio/success.mp3" type="audio/mpeg"></audio>
     <audio id="fail-sound" preload="auto"><source src="audio/fail.mp3" type="audio/mpeg"></audio>
@@ -199,6 +161,6 @@
 
     <div id="confetti-wrapper" class="hidden"></div>
 
-    <script type="module" src="script.js?v=273"></script>
+    <script type="module" src="script.js?v=300"></script>
 </body>
 </html>
