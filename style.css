@@ -1,4 +1,4 @@
-/* === ESTILOS v140 === */
+/* === ESTILOS v145 === */
 * { box-sizing: border-box; }
 body { font-family: 'Segoe UI', 'Roboto', sans-serif; background-color: #eef2f6; color: #333; margin: 0; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow-x: hidden; }
 
@@ -12,32 +12,17 @@ header { width: 100%; padding: 12px 20px; background: #fff; box-shadow: 0 4px 12
 
 .verified-badge { display: inline-flex; align-items: center; gap: 5px; background-color: #e6f4ea; color: #137333; border: 1px solid #1e8e3e; padding: 6px 12px; border-radius: 4px; font-size: 0.85rem; font-weight: bold; }
 
-/* FOTO DE PERFIL DE GOOGLE */
-.google-profile-pic {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    border: 2px solid #1a73e8;
-    padding: 2px;
-    background: #fff;
-    object-fit: cover;
-    margin-bottom: 5px;
-}
-
-/* FOTO PEQUEÑA EN HEADER */
-.header-profile-pic {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    border: 1px solid #ccc;
-}
+/* FOTOS DE PERFIL */
+.google-profile-pic { width: 60px; height: 60px; border-radius: 50%; border: 2px solid #1a73e8; padding: 2px; background: #fff; object-fit: cover; margin-bottom: 5px; }
+.header-profile-pic { width: 32px; height: 32px; border-radius: 50%; border: 1px solid #ccc; }
 
 .locked-btn { opacity: 0.3; pointer-events: none; filter: grayscale(100%); cursor: not-allowed; }
 #btn-ranking:not(.locked-btn) i { color: #fbbc04; }
 #btn-stats:not(.locked-btn) i { color: #1a73e8; }
 
-.btn-google-style { background: white; color: #444; border: 1px solid #ddd; padding: 12px; width: 100%; border-radius: 50px; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; font-weight: 600; transition: 0.2s; font-size: 0.95rem; }
-.btn-google-style:hover { background: #f8f9fa; }
+/* LOGIN ESTILO CORRECTO */
+.btn-google-style { background: white; color: #3c4043; border: 1px solid #dadce0; padding: 12px; width: 100%; border-radius: 50px; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; font-weight: 600; transition: 0.2s; font-size: 0.95rem; font-family: 'Google Sans', 'Roboto', arial, sans-serif; }
+.btn-google-style:hover { background: #f8f9fa; border-color: #d2e3fc; box-shadow: 0 1px 3px rgba(60,64,67,0.3); }
 
 /* AVATARES */
 .avatar-section { margin: 10px 0; }
@@ -67,12 +52,10 @@ select:focus { border-color: #1a73e8; outline: none; box-shadow: 0 0 0 2px rgba(
 .room-btn:hover { border-color: #1a73e8; background: #f0f7ff; }
 .room-count { font-size: 0.8rem; font-weight: 600; margin-top: 6px; color: #1a73e8; background: #e8f0fe; padding: 2px 8px; border-radius: 10px; }
 
-/* LOBBY */
 .lobby-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; max-height: 200px; overflow-y: auto; }
 .player-badge { background: #fff; border: 1px solid #dadce0; padding: 6px 12px; border-radius: 50px; font-weight: bold; display: flex; align-items: center; gap: 10px; }
 .lobby-avatar-small { width: 30px; height: 30px; border-radius: 50%; }
 
-/* RANKING ROW */
 .rank-row { display: flex; align-items: center; padding: 10px; border-bottom: 1px solid #eee; gap: 10px; }
 .rank-pos { font-weight: 800; width: 20px; color: #888; }
 .rank-img { width: 40px; height: 40px; border-radius: 8px; background: #eee; object-fit: cover; }
@@ -95,7 +78,7 @@ input[type=range] { width: 60px; accent-color: #1a73e8; }
 .ranking-box { background: #fffdeb; border: 2px solid #fbbc04; border-radius: 12px; padding: 15px; margin-bottom: 25px; }
 #combo-display { position: fixed; top: 80px; left: 50%; transform: translateX(-50%); background: linear-gradient(45deg, #ff512f, #dd2476); color: white; padding: 8px 20px; border-radius: 50px; font-weight: 900; font-size: 1.1rem; z-index: 9999; animation: popIn 0.5s; }
 
-/* PODIUM STYLES */
+/* PODIUM */
 .podium-container { display: flex; align-items: flex-end; justify-content: center; gap: 15px; height: 300px; margin-top: 20px; padding-bottom: 20px; overflow-x: auto; }
 .podium-column { display: flex; flex-direction: column; align-items: center; width: 80px; transition: height 1s ease; }
 .podium-avatar { width: 60px; height: 60px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 5px; background: #eee; z-index: 2; }
