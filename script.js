@@ -50,6 +50,9 @@ const bancoPreguntas = [
     { texto: "¿Cuál es un ejemplo de amenaza técnica según el documento?", opciones: ["Phishing", "Baja tensión eléctrica", "Inyección SQL", "Insider"], respuesta: 1, explicacion: "Respuesta correcta: Baja tensión eléctrica." },
     { texto: "¿Qué herramienta open-source permite escaneos de gran escala en red y sistemas?", opciones: ["Nmap", "Fortinet WVS", "OpenVAS", "Nessus Essentials"], respuesta: 2, explicacion: "Respuesta correcta: OpenVAS." },
     { texto: "Una amenaza ambiental típica para un centro de datos sería:", opciones: ["Huracán", "Robo de servidores", "Virus informático", "Pérdida de energía"], respuesta: 0, explicacion: "Respuesta correcta: Huracán." },
+    { texto: "Herramienta que identifica puertos abiertos y sistema operativo desde consola:", opciones: ["OpenVAS", "Wireshark", "Nessus", "Nmap"], respuesta: 3, explicacion: "Respuesta correcta: Nmap." },
+    { texto: "Un IDS normalmente responde:", opciones: ["Eliminando archivos", "Aumentando ancho de banda", "Generando alertas o registrando eventos", "Cambiando contraseñas"], respuesta: 2, explicacion: "Respuesta correcta: Generando alertas o registrando eventos." },
+    { texto: "Un objetivo clave de la seguridad de bases de datos es mantener la:", opciones: ["Confidencialidad, integridad y disponibilidad (CIA)", "Fragmentación", "Redundancia excesiva", "Compresión"], respuesta: 0, explicacion: "Respuesta correcta: Confidencialidad, integridad y disponibilidad (CIA)." },
     { texto: "El término SSRF significa:", opciones: ["Safe Session Reset Form", "Simple Service Relay Feature", "Secure Software Risk Framework", "Server-Side Request Forgery"], respuesta: 3, explicacion: "Respuesta correcta: Server-Side Request Forgery." },
     { texto: "El proyecto OWASP tiene como finalidad principal:", opciones: ["Vender cortafuegos", "Producir malware de prueba", "Crear estándares de hardware", "Mejorar la seguridad de aplicaciones web de forma abierta"], respuesta: 3, explicacion: "Respuesta correcta: Mejorar la seguridad de aplicaciones web de forma abierta." },
     { texto: "La gestión de activos se considera importante porque:", opciones: ["Genera llaves criptográficas", "Reduce el jitter", "Actualiza antivirus", "Mantiene control sobre hardware, software y datos"], respuesta: 3, explicacion: "Respuesta correcta: Mantiene control sobre hardware, software y datos." },
@@ -294,11 +297,13 @@ function iniciarJuegoReal() {
     } 
     else if (modo === 'study') {
         currentMode = 'study';
+        // MODO ESTUDIO: 64 PREGUNTAS ALEATORIAS
         preguntasExamen = [...bancoPreguntas].sort(() => 0.5 - Math.random());
         iniciarInterfazQuiz();
     } 
     else {
         currentMode = 'exam';
+        // MODO EXAMEN: 20 PREGUNTAS ALEATORIAS
         preguntasExamen = [...bancoPreguntas].sort(() => 0.5 - Math.random()).slice(0, 20);
         iniciarInterfazQuiz();
     }
@@ -394,226 +399,6 @@ async function unirseASala(salaId) {
             if (data.estado === 'jugando') iniciarQuizMultiplayer();
         }
     });
-}
-
-async function limpiarSala(salaId) {
-    if(!salaId || !jugadorActualData) return;
-    const salaRef = doc(db, "salas_activas", salaId);
-    try {
-        await updateDoc(salaRef, { jugadores: arrayRemove(jugadorActualData) });
-        
-        const snap = await getDoc(salaRef);
-        if(snap.exists()) {
-            const currentPlayers = snap.data().jugadores || [];
-            if(currentPlayers.length === 0 && snap.data().estado !== 'esperando') {
-                 await updateDoc(salaRef, { estado: 'esperando' });
-            }
-        }
-    } catch (e) { console.error("Error limpiando sala:", e); }
-}
-
-document.getElementById('btn-leave-lobby').addEventListener('click', async () => {
-    if (confirm("¿Abandonar escuadrón?")) {
-        if (currentRoomId) {
-            await limpiarSala(currentRoomId);
-            location.reload();
-        }
-    }
-});
-
-document.getElementById('btn-start-war').addEventListener('click', async () => {
-    const salaRef = doc(db, "salas_activas", currentRoomId);
-    await updateDoc(salaRef, { estado: 'jugando' });
-});
-
-function iniciarQuizMultiplayer() {
-    if (unsubscribeRoom) unsubscribeRoom();
-    preguntasExamen = [...bancoPreguntas].sort(() => 0.5 - Math.random());
-    iniciarInterfazQuiz();
-}
-
-function iniciarInterfazQuiz() {
-    if(currentMode === 'exam') {
-        document.getElementById('btn-ranking').classList.add('locked-btn');
-        document.getElementById('btn-stats').classList.add('locked-btn');
-    }
-
-    respuestasUsuario = [];
-    indiceActual = 0;
-    currentStreak = 0;
-    startTime = Date.now();
-    
-    const bgMusic = document.getElementById('bg-music');
-    const vol = document.getElementById('volume-slider').value;
-    if(bgMusic) { bgMusic.volume = vol; bgMusic.play().catch(e => console.log("Autoplay fail")); }
-
-    if(tiempoRestante > 0) iniciarReloj();
-    else document.getElementById('timer-display').innerText = "--:--";
-
-    showScreen('quiz-screen');
-    cargarPregunta();
-}
-
-function cargarPregunta() {
-    if (indiceActual >= preguntasExamen.length) { terminarQuiz(); return; }
-    
-    const data = preguntasExamen[indiceActual];
-    document.getElementById('question-text').innerText = `${indiceActual + 1}. ${data.texto}`;
-    const cont = document.getElementById('options-container'); cont.innerHTML = '';
-    seleccionTemporal = null;
-    document.getElementById('btn-next-question').classList.add('hidden');
-
-    data.opciones.forEach((opcion, index) => {
-        const btn = document.createElement('button');
-        btn.innerText = opcion;
-        btn.onclick = () => seleccionarOpcion(index, btn);
-        cont.appendChild(btn);
-    });
-    document.getElementById('progress-display').innerText = `Pregunta ${indiceActual + 1}/${preguntasExamen.length}`;
-}
-
-function seleccionarOpcion(index, btn) {
-    if (currentMode === 'study' && seleccionTemporal !== null) return;
-    
-    seleccionTemporal = index;
-    const btns = document.getElementById('options-container').querySelectorAll('button');
-    btns.forEach(b => b.classList.remove('option-selected'));
-    btn.classList.add('option-selected');
-    
-    if (currentMode === 'study') {
-        mostrarResultadoInmediato(index);
-    } else {
-        document.getElementById('btn-next-question').classList.remove('hidden');
-    }
-}
-
-function mostrarResultadoInmediato(sel) {
-    const pregunta = preguntasExamen[indiceActual];
-    const correcta = pregunta.respuesta;
-    const cont = document.getElementById('options-container');
-    const btns = cont.querySelectorAll('button');
-    
-    btns.forEach(b => b.disabled = true);
-    btns[correcta].classList.add('ans-correct', 'feedback-visible');
-    if(sel !== correcta) btns[sel].classList.add('ans-wrong', 'feedback-visible');
-    
-    const div = document.createElement('div');
-    div.className = 'explanation-feedback';
-    div.innerHTML = `<strong>Explicación:</strong> ${pregunta.explicacion}`;
-    document.getElementById('options-container').appendChild(div);
-    
-    respuestasUsuario.push(sel);
-    document.getElementById('btn-next-question').classList.remove('hidden');
-}
-
-document.getElementById('btn-next-question').addEventListener('click', () => {
-    if (seleccionTemporal !== null) {
-        if(currentMode === 'multiplayer') {
-            const correcta = preguntasExamen[indiceActual].respuesta;
-            if (seleccionTemporal === correcta) {
-                currentStreak++;
-                if(currentStreak >= 2) mostrarRacha(currentStreak);
-                const sfx = document.getElementById('correct-sound');
-                const vol = document.getElementById('volume-slider').value;
-                sfx.volume = vol; sfx.play();
-            } else {
-                currentStreak = 0;
-            }
-        }
-
-        if(currentMode !== 'study') respuestasUsuario.push(seleccionTemporal);
-        indiceActual++;
-        cargarPregunta();
-    }
-});
-
-function mostrarRacha(n) {
-    const d = document.getElementById('combo-display');
-    d.innerText = `¡RACHA x${n}! 🔥`;
-    d.classList.remove('hidden');
-    setTimeout(() => d.classList.add('hidden'), 1500);
-}
-
-function iniciarReloj() {
-    intervaloTiempo = setInterval(() => {
-        tiempoRestante--;
-        let m = Math.floor(tiempoRestante / 60), s = tiempoRestante % 60;
-        document.getElementById('timer-display').innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
-        if (tiempoRestante <= 0) { clearInterval(intervaloTiempo); terminarQuiz(); }
-    }, 1000);
-}
-
-document.getElementById('btn-quit-quiz').addEventListener('click', () => {
-    const msg = currentMode === 'multiplayer' ? "¿Rendirse? Se registrará tu nota actual en la batalla." : "¿Rendirse? Se guardará tu intento.";
-    if(confirm(msg)) terminarQuiz(true);
-});
-
-async function terminarQuiz(abandono = false) {
-    const bgMusic = document.getElementById('bg-music');
-    if(bgMusic) { bgMusic.pause(); bgMusic.currentTime = 0; }
-    clearInterval(intervaloTiempo);
-
-    const tiempoFinal = Math.floor((Date.now() - startTime) / 1000);
-
-    let aciertos = 0;
-    respuestasUsuario.forEach((r, i) => {
-        if (i < preguntasExamen.length && r === preguntasExamen[i].respuesta) aciertos++;
-    });
-    const nota = Math.round((aciertos / preguntasExamen.length) * 100);
-    
-    const nick = document.getElementById('player-nickname').value || currentUserEmail.split('@')[0];
-    const finalAvatar = currentAvatarUrl || 'https://api.dicebear.com/7.x/avataaars/svg?seed=default';
-
-    if (currentMode === 'multiplayer' && currentRoomId) {
-        await addDoc(collection(db, `salas_activas/${currentRoomId}/resultados`), {
-            user: nick,
-            avatar: finalAvatar,
-            score: nota,
-            correctas: aciertos,
-            timeTaken: tiempoFinal,
-            status: abandono ? "Retirado" : "Finalizado",
-            date: new Date()
-        });
-        
-        await limpiarSala(currentRoomId);
-        renderBattlePodium();
-        document.getElementById('battle-results-modal').classList.remove('hidden');
-    } else {
-        document.getElementById('room-results-box').classList.add('hidden');
-        document.getElementById('final-avatar-display').classList.add('hidden');
-        
-        if(currentMode === 'exam') {
-            document.getElementById('btn-ranking').classList.remove('locked-btn');
-            document.getElementById('btn-stats').classList.remove('locked-btn');
-            
-            await guardarHistorialFirebase(nota);
-            await guardarPuntajeGlobal(nota);
-        }
-        showScreen('result-screen');
-        document.getElementById('score-final').innerText = `${nota}/100`;
-        
-        const msg = document.getElementById('custom-msg');
-        const sfxWin = document.getElementById('success-sound');
-        const sfxFail = document.getElementById('fail-sound');
-        const vol = document.getElementById('volume-slider').value;
-        sfxWin.volume = vol; sfxFail.volume = vol;
-
-        if (nota >= 70) sfxWin.play(); else sfxFail.play();
-
-        msg.className = '';
-        if (abandono) {
-            msg.innerText = "Finalizado por usuario."; msg.style.color = "#ea4335";
-        } else if (nota === 100) {
-            msg.innerText = "¡LEGENDARIO! 🏆"; msg.style.color = "#28a745"; createConfetti();
-        } else if (nota >= 70) {
-            msg.innerText = "¡Misión Cumplida!"; msg.style.color = "#fbbc04";
-        } else {
-            msg.innerText = "Entrenamiento fallido."; msg.style.color = "#ea4335";
-        }
-
-        if (currentMode === 'study') document.getElementById('btn-review').classList.add('hidden');
-        else document.getElementById('btn-review').classList.remove('hidden');
-    }
 }
 
 async function limpiarSala(salaId) {
