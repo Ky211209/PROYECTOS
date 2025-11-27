@@ -47,11 +47,6 @@ let jugadorActualData = null;
 let jugadorActualId = null; // ID ÚNICO: user.uid de Firebase
 let jugadorActualTemporalId = null; // ID TEMPORAL para la sala (para la sesión actual)
 
-// *** ARREGLO RÁPIDO PARA ASEGURAR QUE EL LOADER SE OCULTE INMEDIATAMENTE ***
-// Oculta la pantalla de carga tan pronto como el script se ejecuta.
-document.getElementById('app-loader').classList.add('hidden'); 
-// *** FIN DEL ARREGLO RÁPIDO ***
-
 // --- BANCO DE PREGUNTAS COMPLETO (64 PREGUNTAS) ---
 const bancoPreguntas = [
     { texto: "¿Cuál es un ejemplo de amenaza técnica según el documento?", opciones: ["Phishing", "Baja tensión eléctrica", "Inyección SQL", "Insider"], respuesta: 1, explicacion: "Respuesta correcta: Baja tensión eléctrica." },
@@ -267,9 +262,11 @@ document.getElementById('mode-select').addEventListener('change', toggleHeaderBu
 
 // *** ON AUTH STATE CHANGED ***
 onAuthStateChanged(auth, async (user) => {
-    // Si el loader ya fue ocultado por el arreglo rápido, esta línea no hace nada.
-    // Si no fue ocultado por el arreglo rápido, esta línea lo oculta después de la autenticación.
     
+    // Si el usuario persiste el loader después de las correcciones de HTML, esta línea lo oculta.
+    // Es el mecanismo de ocultamiento lógico.
+    document.getElementById('app-loader').classList.add('hidden');
+
     if (user) {
         // Asignar user.uid al ID de jugador permanente
         jugadorActualId = user.uid; 
