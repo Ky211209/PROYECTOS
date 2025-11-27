@@ -35,7 +35,6 @@ let currentAvatarUrl = null;
 let currentStreak = 0;
 let startTime = 0; 
 
-// --- BANCO DE PREGUNTAS (64 PREGUNTAS) ---
 const bancoPreguntas = [
     { texto: "¿Cuál es un ejemplo de amenaza técnica según el documento?", opciones: ["Phishing", "Baja tensión eléctrica", "Inyección SQL", "Insider"], respuesta: 1, explicacion: "Respuesta correcta: Baja tensión eléctrica." },
     { texto: "¿Qué herramienta open-source permite escaneos de gran escala en red y sistemas?", opciones: ["Nmap", "Fortinet WVS", "OpenVAS", "Nessus Essentials"], respuesta: 2, explicacion: "Respuesta correcta: OpenVAS." },
@@ -212,14 +211,11 @@ onAuthStateChanged(auth, async (user) => {
                 document.getElementById('user-display').innerText = user.email.split('@')[0];
                 document.getElementById('player-nickname').value = user.email.split('@')[0];
                 
-                // --- CARGAR FOTO DE GOOGLE ---
                 if (user.photoURL) {
-                    // Foto en configuración
                     const profilePic = document.getElementById('user-google-photo');
                     profilePic.src = user.photoURL;
                     profilePic.classList.remove('hidden');
                     
-                    // Foto pequeña en header (opcional)
                     const headerPic = document.getElementById('header-photo');
                     if(headerPic) {
                         headerPic.src = user.photoURL;
