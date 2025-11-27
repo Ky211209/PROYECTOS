@@ -33,7 +33,7 @@ header { width: 100%; padding: 12px 20px; background: #fff; box-shadow: 0 4px 12
 .avatar-option { width: 60px; height: 60px; border-radius: 12px; background-color: #f0f4f8; border: 2px solid transparent; padding: 4px; }
 .avatar-option:hover { transform: scale(1.05); }
 .avatar-selected { border-color: #1a73e8; background-color: #e8f0fe; transform: scale(1.1); }
-#player-nickname { width: 100%; padding: 10px; border: 1px solid #dadce0; border-radius: 6px; font-size: 1rem; text-align: center; font-weight: bold; color: #1a73e8; outline: none; }
+#player-nickname { width: 100%; padding: 10px; margin-top: 15px; border: 1px solid #dadce0; border-radius: 6px; font-size: 1rem; text-align: center; font-weight: bold; color: #1a73e8; outline: none; }
 
 .control-group { margin-bottom: 15px; text-align: left; }
 label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.85rem; color: #444; }
