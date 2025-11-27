@@ -34,15 +34,17 @@ const AVATAR_CONFIG = [
 let currentAvatarUrl = null;
 let currentStreak = 0;
 let startTime = 0; 
-let selectedGender = 'male'; // Default
 
-// 64 PREGUNTAS 
 const bancoPreguntas = [
     { texto: "¿Cuál es un ejemplo de amenaza técnica según el documento?", opciones: ["Phishing", "Baja tensión eléctrica", "Inyección SQL", "Insider"], respuesta: 1, explicacion: "Respuesta correcta: Baja tensión eléctrica." },
-    // ... (MANTEN EL BANCO COMPLETO) ...
+    { texto: "¿Qué herramienta open-source permite escaneos de gran escala en red y sistemas?", opciones: ["Nmap", "Fortinet WVS", "OpenVAS", "Nessus Essentials"], respuesta: 2, explicacion: "Respuesta correcta: OpenVAS." },
+    { texto: "Una amenaza ambiental típica para un centro de datos sería:", opciones: ["Huracán", "Robo de servidores", "Virus informático", "Pérdida de energía"], respuesta: 0, explicacion: "Respuesta correcta: Huracán." },
+    // ... (MANTÉN LAS 64 PREGUNTAS AQUÍ, NO LAS CORTES) ...
+    { texto: "Un objetivo clave de la seguridad de bases de datos es mantener la:", opciones: ["Confidencialidad, integridad y disponibilidad (CIA)", "Fragmentación", "Redundancia excesiva", "Compresión"], respuesta: 0, explicacion: "Respuesta correcta: Confidencialidad, integridad y disponibilidad (CIA)." }
 ];
-// NOTA: ASEGÚRATE DE COPIAR EL ARRAY COMPLETO DE 64 PREGUNTAS DE LA RESPUESTA ANTERIOR
-if(bancoPreguntas.length < 64) console.log("Recuerda pegar todas las preguntas.");
+
+// Asegúrate de pegar el array completo.
+if(bancoPreguntas.length < 64) console.warn("Faltan preguntas en el script.js");
 
 let preguntasExamen = [];
 let indiceActual = 0;
@@ -55,7 +57,6 @@ let currentRoomId = null;
 let currentMode = 'individual';
 let unsubscribeRoom = null;
 
-// --- SONIDOS AUXILIARES ---
 function playClick() {
     const sfx = document.getElementById('click-sound');
     if(sfx) { sfx.currentTime = 0; sfx.play().catch(()=>{}); }
@@ -64,7 +65,6 @@ function playClick() {
 function initAvatars() {
     const grid = document.getElementById('avatar-grid');
     if(grid.children.length > 1) return; 
-    
     grid.innerHTML = '';
     AVATAR_CONFIG.forEach((av, index) => {
         const url = `https://api.dicebear.com/7.x/${av.style}/svg?seed=${av.seed}&backgroundColor=${av.bg}`;
@@ -73,7 +73,7 @@ function initAvatars() {
         img.className = 'avatar-option';
         if(index === 0) { img.classList.add('avatar-selected'); currentAvatarUrl = url; }
         img.onclick = () => {
-            playClick(); // Sonido click
+            playClick();
             document.querySelectorAll('.avatar-option').forEach(x => x.classList.remove('avatar-selected'));
             img.classList.add('avatar-selected');
             currentAvatarUrl = url;
@@ -82,40 +82,34 @@ function initAvatars() {
     });
 }
 
-// --- SELECTOR DE GÉNERO ---
-document.querySelectorAll('.gender-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-        document.querySelectorAll('.gender-btn').forEach(b => b.classList.remove('selected'));
-        btn.classList.add('selected');
-        selectedGender = btn.getAttribute('data-gender');
-        playClick();
-    });
-});
-
-// --- VOZ DEL SISTEMA (INVERSA) ---
+// --- FUNCIÓN DE VOZ MEJORADA ---
 function hablar(texto, callback) {
     const synth = window.speechSynthesis;
     if (!synth) { if(callback) callback(); return; }
-    
+
+    // Cancelar cualquier habla anterior
+    synth.cancel();
+
     const utterance = new SpeechSynthesisUtterance(texto);
-    utterance.lang = 'es-ES';
+    utterance.lang = 'es-ES'; // Español neutro
     utterance.rate = 1.0;
 
-    // BUSCAR VOZ OPUESTA
+    // Buscar voces más naturales si existen (Chrome/Edge suelen tener "Google español")
     const voices = synth.getVoices();
-    let targetVoice = null;
+    
+    // Preferencia: 1. Google español, 2. Microsoft Helena/Sabina, 3. Cualquiera es-ES
+    // Queremos voz de mujer (por defecto en español suele serlo) o específica de Google
+    const naturalVoice = voices.find(v => 
+        (v.lang.includes('es') && (v.name.includes('Google') || v.name.includes('Natural'))) ||
+        (v.lang === 'es-ES' || v.lang === 'es-419')
+    );
+    
+    if(naturalVoice) utterance.voice = naturalVoice;
 
-    if (selectedGender === 'male') {
-        // Usuario Hombre -> Buscar Voz Mujer
-        targetVoice = voices.find(v => v.lang.includes('es') && (v.name.includes('Female') || v.name.includes('Google') || v.name.includes('Sabina') || v.name.includes('Monica')));
-    } else {
-        // Usuario Mujer -> Buscar Voz Hombre
-        targetVoice = voices.find(v => v.lang.includes('es') && (v.name.includes('Male') || v.name.includes('Pablo') || v.name.includes('Jorge') || v.name.includes('Enrique')));
+    if (callback) {
+        utterance.onend = callback;
     }
 
-    if (targetVoice) utterance.voice = targetVoice;
-    if (callback) utterance.onend = callback;
-    
     synth.speak(utterance);
 }
 
@@ -194,21 +188,27 @@ onAuthStateChanged(auth, async (user) => {
                 showScreen('setup-screen');
                 document.getElementById('btn-logout').classList.remove('hidden');
                 
-                const nombre = user.email.split('@')[0];
-                document.getElementById('user-display').innerText = nombre;
-                document.getElementById('player-nickname').value = nombre;
+                // Obtener nombre real de Google o del correo
+                const nombreReal = user.displayName ? user.displayName.split(' ')[0] : user.email.split('@')[0];
+                
+                document.getElementById('user-display').innerText = nombreReal;
+                document.getElementById('player-nickname').value = nombreReal;
                 
                 if (user.photoURL) {
                     const profilePic = document.getElementById('user-google-photo');
                     profilePic.src = user.photoURL;
                     profilePic.classList.remove('hidden');
                     const headerPic = document.getElementById('header-photo');
-                    if(headerPic) {
-                        headerPic.src = user.photoURL;
-                        // Se mantiene oculto hasta empezar
-                    }
+                    if(headerPic) headerPic.src = user.photoURL;
                 }
+                
                 toggleHeaderButtons();
+                
+                // SALUDO DE BIENVENIDA
+                // setTimeout pequeño para asegurar que el navegador permite audio si hubo interacción reciente
+                setTimeout(() => {
+                    hablar(`Bienvenido ${nombreReal}, elija la opción que necesite.`);
+                }, 500);
             }
         } else {
             alert("No autorizado.");
@@ -226,12 +226,16 @@ onAuthStateChanged(auth, async (user) => {
 document.getElementById('btn-google').addEventListener('click', () => signInWithPopup(auth, new GoogleAuthProvider()));
 document.getElementById('btn-logout').addEventListener('click', () => { if(confirm("¿Salir?")) { signOut(auth); location.reload(); } });
 
-// --- BOTON EMPEZAR (VOZ) ---
+// --- BOTON EMPEZAR (DESPEDIDA Y ARRANQUE) ---
 document.getElementById('btn-start').addEventListener('click', () => {
     const nombre = document.getElementById('user-display').innerText;
     
-    // Hablar primero (Usando el género seleccionado)
-    hablar(`Buena suerte ${nombre}, que empiece el juego.`, () => {
+    // Deshabilitar botón para evitar doble clic
+    document.getElementById('btn-start').disabled = true;
+
+    hablar("Excelente, te deseo suerte.", () => {
+        // Esto se ejecuta CUANDO TERMINE DE HABLAR
+        document.getElementById('btn-start').disabled = false;
         iniciarJuegoReal();
     });
 });
@@ -240,6 +244,7 @@ function iniciarJuegoReal() {
     const modo = document.getElementById('mode-select').value;
     const tiempo = document.getElementById('time-select').value;
     
+    // MOSTRAR INFO HEADER AHORA SÍ
     document.getElementById('header-user-info').classList.remove('hidden');
     document.getElementById('header-username').innerText = document.getElementById('user-display').innerText;
 
@@ -274,7 +279,6 @@ document.getElementById('back-to-avatar').addEventListener('click', () => showSc
 document.getElementById('btn-stats').addEventListener('click', async () => { 
     const btn = document.getElementById('btn-stats');
     if(btn.classList.contains('locked-btn')) return;
-    
     await cargarGraficoFirebase();
     document.getElementById('stats-modal').classList.remove('hidden'); 
 });
@@ -282,7 +286,6 @@ document.getElementById('btn-stats').addEventListener('click', async () => {
 document.getElementById('btn-ranking').addEventListener('click', async () => {
     const btn = document.getElementById('btn-ranking');
     if(btn.classList.contains('locked-btn')) return;
-
     document.getElementById('ranking-modal').classList.remove('hidden');
     await cargarRankingGlobal();
 });
