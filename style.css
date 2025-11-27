@@ -1,0 +1,109 @@
+/* === DISEÑO AZUL COMPACTO === */
+* { box-sizing: border-box; }
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #eff3f8; color: #444;
+    margin: 0; padding: 0; min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+
+header {
+    width: 100%; padding: 10px 20px; background: #ffffff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1); position: fixed; top: 0;
+    display: flex; align-items: center; justify-content: space-between; z-index: 100;
+}
+
+.logo { display: flex; align-items: center; gap: 8px; }
+.logo h1 { margin: 0; font-size: 1.1rem; color: #1a73e8; font-weight: 700; }
+.subtitle { color: #888; font-size: 0.8rem; margin-left: 5px; }
+
+.container {
+    width: 90%; max-width: 400px; background: #ffffff;
+    padding: 30px 25px; border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); text-align: center; margin-top: 60px; margin-bottom: 20px;
+}
+
+h2 { color: #1877f2; margin-top: 0; font-size: 1.5rem; margin-bottom: 5px; }
+p { color: #666; font-size: 0.9rem; margin-bottom: 20px; }
+
+.control-group { text-align: left; margin-bottom: 15px; }
+label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.85rem; color: #555; }
+
+input, select {
+    width: 100%; padding: 10px 15px; border: 1px solid #dadce0;
+    border-radius: 6px; font-size: 0.95rem; background: #fff; transition: 0.3s;
+}
+input:focus { border-color: #1877f2; outline: none; box-shadow: 0 0 0 3px rgba(24, 119, 242, 0.1); }
+
+button {
+    width: 100%; padding: 10px; border: none; border-radius: 50px;
+    font-size: 0.95rem; font-weight: 600; cursor: pointer; margin-top: 8px; transition: 0.2s;
+}
+
+.btn-primary { background-color: #1877f2; color: white; }
+.btn-primary:hover { background-color: #166fe5; }
+.btn-secondary { background-color: #f1f3f4; color: #333; }
+
+#btn-google {
+    background-color: white; color: #3c4043; border: 1px solid #dadce0;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+#btn-google:hover { background-color: #f8f9fa; }
+
+.hidden { display: none; }
+hr { border: 0; border-top: 1px solid #eee; margin: 15px 0; }
+
+/* EXAMEN */
+#question-text { font-size: 1.1rem; margin-bottom: 15px; color: #202124; }
+
+.options-box button {
+    background: #fff; border: 1px solid #dadce0; border-radius: 8px;
+    padding: 10px 15px; margin-bottom: 8px; text-align: left; font-weight: normal;
+}
+.options-box button:hover { background-color: #f1f3f4; border-color: #1877f2; }
+
+/* ESTILO DE OPCIÓN SELECCIONADA (NUEVO) */
+.option-selected {
+    background-color: #e8f0fe !important;
+    border: 2px solid #1a73e8 !important;
+    color: #1a73e8 !important;
+    font-weight: bold;
+}
+
+/* REVISIÓN */
+.review-item { background: #f8f9fa; border: 1px solid #ddd; border-radius: 8px; padding: 15px; margin-bottom: 15px; text-align: left; }
+.review-question { font-weight: bold; margin-bottom: 10px; color: #333; }
+.review-answer { padding: 8px; border-radius: 6px; margin-bottom: 5px; font-size: 0.9rem; }
+.user-selected { border: 2px solid #1a73e8; }
+.ans-correct { background-color: #e6f4ea; color: #137333; font-weight: bold; }
+.ans-wrong { background-color: #fce8e6; color: #c5221f; text-decoration: line-through; }
+.review-explanation { margin-top: 10px; font-size: 0.85rem; color: #555; font-style: italic; background: #fff; padding: 8px; border-left: 3px solid #1a73e8; }
+#timer-display { color: #ea4335; font-size: 1.2rem; font-weight: bold; }
+
+/* === NUEVOS ESTILOS PARA EL MODO ESTUDIO === */
+
+/* Feedback visual para Modo Estudio */
+.feedback-visible {
+    /* Estilo base para el feedback */
+    font-weight: bold;
+    color: white !important; /* Texto blanco para resaltar */
+}
+.ans-correct {
+    background-color: #28a745 !important; /* Verde oscuro para la correcta */
+    border: 2px solid #1e7e34 !important;
+}
+.ans-wrong {
+    background-color: #dc3545 !important; /* Rojo oscuro para la incorrecta */
+    border: 2px solid #bd2130 !important;
+}
+.explanation-feedback {
+    /* Contenedor para la explicación */
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #f8f9fa; /* Fondo gris claro */
+    border-left: 5px solid #1a73e8; /* Borde azul llamativo */
+    color: #444;
+    text-align: left;
+    font-size: 0.95rem;
+}
