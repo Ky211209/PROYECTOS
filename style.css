@@ -1,4 +1,4 @@
-/* === ESTILOS v260 === */
+/* === ESTILOS v270 === */
 * { box-sizing: border-box; }
 body { font-family: 'Segoe UI', 'Roboto', sans-serif; background-color: #eef2f6; color: #333; margin: 0; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow-x: hidden; }
 
@@ -30,10 +30,10 @@ header { width: 100%; padding: 12px 20px; background: #fff; box-shadow: 0 4px 12
 
 .avatar-section { margin: 10px 0; }
 .avatar-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 15px; justify-items: center; }
-.avatar-option { width: 60px; height: 60px; cursor: pointer; transition: transform 0.2s, border 0.2s; border-radius: 12px; background-color: #f0f4f8; border: 2px solid transparent; padding: 4px; }
+.avatar-option { width: 60px; height: 60px; border-radius: 12px; background-color: #f0f4f8; border: 2px solid transparent; padding: 4px; }
 .avatar-option:hover { transform: scale(1.05); }
 .avatar-selected { border-color: #1a73e8; background-color: #e8f0fe; transform: scale(1.1); }
-#player-nickname { width: 100%; padding: 10px; margin-top: 15px; border: 1px solid #dadce0; border-radius: 6px; font-size: 1rem; text-align: center; font-weight: bold; color: #1a73e8; outline: none; }
+#player-nickname { width: 100%; padding: 10px; border: 1px solid #dadce0; border-radius: 6px; font-size: 1rem; text-align: center; font-weight: bold; color: #1a73e8; outline: none; }
 
 .control-group { margin-bottom: 15px; text-align: left; }
 label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.85rem; color: #444; }
