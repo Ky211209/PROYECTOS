@@ -1,4 +1,4 @@
-/* === ESTILOS v250 === */
+/* === ESTILOS v300 === */
 * { box-sizing: border-box; }
 body { font-family: 'Segoe UI', 'Roboto', sans-serif; background-color: #eef2f6; color: #333; margin: 0; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow-x: hidden; }
 
@@ -46,12 +46,12 @@ select:focus { border-color: #1a73e8; outline: none; box-shadow: 0 0 0 2px rgba(
 .option-selected { border-color: #1a73e8 !important; background: #e8f0fe !important; font-weight: 600; color: #1a73e8; }
 .ans-correct { border-color: #28a745 !important; background: #d4edda !important; color: #155724 !important; }
 .ans-wrong { border-color: #dc3545 !important; background: #f8d7da !important; color: #721c24 !important; }
+.explanation-feedback { background: #f8f9fa; padding: 10px; border-left: 4px solid #1a73e8; margin-top: 10px; text-align: left; font-size: 0.9rem; }
 
 .rooms-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
 .room-btn { background: #fff; border: 1px solid #dadce0; padding: 15px; border-radius: 8px; cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; align-items: center; }
 .room-btn:hover { border-color: #1a73e8; background: #f0f7ff; }
 .room-count { font-size: 0.8rem; font-weight: 600; margin-top: 6px; color: #1a73e8; background: #e8f0fe; padding: 2px 8px; border-radius: 10px; }
-/* ICONO DE SALA */
 .room-icon { font-size: 2rem; color: #1a73e8; margin-bottom: 10px; }
 
 .lobby-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; max-height: 200px; overflow-y: auto; }
